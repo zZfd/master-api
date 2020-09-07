@@ -46,6 +46,9 @@ namespace DataBase
 
         public short Status { get; set; }
 
+        [StringLength(100)]
+        public string Category { get; set; }
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<RoleMenu> RoleMenu { get; set; }
     }

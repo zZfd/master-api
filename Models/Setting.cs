@@ -14,6 +14,15 @@ namespace WebApi.Models
             已删除 = 2
         }
 
+        //public enum MenuType
+        //{
+        //    根节点 = "ROOT",
+        //    一级菜单 = "MENU-1",
+        //    二级菜单 = "MENU-2",
+        //    页面 = "PAGE",
+        //    按钮 = "BUTTON"
+        //}
+
         public static List<SettingModel> normalStatus = new List<SettingModel>
         {
             new SettingModel{key = "0",val = "正常"},

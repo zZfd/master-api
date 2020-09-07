@@ -87,6 +87,10 @@ namespace DataBase
                 .IsUnicode(false);
 
             modelBuilder.Entity<Menu>()
+                .Property(e => e.Category)
+                .IsUnicode(false);
+
+            modelBuilder.Entity<Menu>()
                 .HasMany(e => e.RoleMenu)
                 .WithRequired(e => e.Menu1)
                 .HasForeignKey(e => e.Menu);

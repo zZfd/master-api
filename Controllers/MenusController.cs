@@ -25,6 +25,76 @@ namespace WebApi.Controllers
 
         //}
 
+        /// <summary>
+        /// 获取菜单树
+        /// 可用于elemet ui el-tree等树形结构
+        /// </summary>
+        /// <returns></returns>
+        public IHttpActionResult GetMenuTree()
+        {
+            var menus = db.Menu.Where(m =>m.Status == (short)Models.Setting.NormalStauts.正常)
+                .Select(m => new Models.Menu.MenuModel
+                {
+                    Id = m.Id,
+                    PId = m.PId,
+                    Action = m.Action,
+                    Controller = m.Controller,
+                    Icon = m.Icon,
+                    Name = m.Name,
+                }).ToList();
+            var menuTree = MenuTree(Guid.Parse("D4406EB9-C2D7-4BFD-8510-DCB417FA7F33"), menus);
+            return Json(new { code = 200, msg = "获取成功", content = menuTree });
+        }
+
+        /// <summary>
+        /// 获取权限路由树
+        /// 可用于elemet ui（el-menu权限路由）等菜单路由
+        /// </summary>
+        /// <returns></returns>
+        public IHttpActionResult GetRouterTree()
+        {
+            var routers = db.Menu.Where(m => m.Type != "BUTTON" && m.Status == (short)Models.Setting.NormalStauts.正常)
+                .Select(m => new Models.Menu.MenuModel
+                {
+                    Id = m.Id,
+                    PId = m.PId,
+                    Action = m.Action,
+                    Controller = m.Controller,
+                    Icon = m.Icon,
+                    Name = m.Name,
+                }).ToList();
+            var routerTree = MenuTree(Guid.Parse("D4406EB9-C2D7-4BFD-8510-DCB417FA7F33"), routers);
+            return Json(new { code = 200, msg = "获取成功", content = routerTree });
+        }
+        public Models.Menu.MenuTree MenuTree(Guid pid,List<Models.Menu.MenuModel> menus)
+        {
+            if(menus == null || menus.Count() == 0)
+            {
+                return null;
+            }
+            var menu = menus.Where(m => m.Id == pid).FirstOrDefault();
+            var children = menus.Where(m => m.PId == pid).ToList();
+            menus.Remove(menu);
+            Models.Menu.MenuTree child = new Models.Menu.MenuTree
+            {
+                Id = menu.Id,
+                Name = menu.Name,
+                Controller = menu.Controller,
+                Action = menu.Action,
+                Icon = menu.Icon,
+            };
+            if (children.Any())
+            {
+                child.Children = new List<Models.Menu.MenuTree>();
+
+                foreach (var item in children)
+                {
+                    child.Children.Add(MenuTree(item.Id, menus));
+                }
+            }
+            return child;
+        }
+        //public IHttpActionResult Get
 
         // GET: api/Menus/5
         [ResponseType(typeof(Menu))]
