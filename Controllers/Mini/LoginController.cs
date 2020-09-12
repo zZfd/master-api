@@ -14,6 +14,7 @@ namespace WebApi.Controllers.Mini
     {
         private DB db = new DB();
 
+        [Filter.CheckFilter]
         public IHttpActionResult Login(LoginModel.LoginModel login)
         {
             if (ModelState.IsValid)

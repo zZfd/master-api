@@ -158,6 +158,7 @@
     <Compile Include="App_Start\SwaggerConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\Mini\LoginController.cs" />
+    <Compile Include="Filter\CheckFilter.cs" />
     <Compile Include="Filter\Power.cs" />
     <Compile Include="Filter\WebApiProfilingActionFilter.cs" />
     <Compile Include="Global.asax.cs">
