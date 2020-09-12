@@ -1,11 +1,8 @@
+using System.Data.Entity;
+
 namespace DataBase
 {
-    using System;
-    using System.Data.Entity;
-    using System.ComponentModel.DataAnnotations.Schema;
-    using System.Linq;
-
-    public partial class DB : DbContext
+    public partial class DB : System.Data.Entity.DbContext
     {
         public DB()
             : base("name=DB")

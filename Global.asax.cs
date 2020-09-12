@@ -18,7 +18,7 @@ namespace WebApi
             
 
             //注册ASP.NET MVC应用程序中的所有区域。
-            AreaRegistration.RegisterAllAreas();
+            //AreaRegistration.RegisterAllAreas();
 
             //配置WebApi
             GlobalConfiguration.Configure(WebApiConfig.Register);
@@ -27,8 +27,8 @@ namespace WebApi
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
 
             //注册路由配置
-            RouteConfig.RegisterRoutes(RouteTable.Routes);
-            BundleConfig.RegisterBundles(BundleTable.Bundles);
+            //RouteConfig.RegisterRoutes(RouteTable.Routes);
+            //BundleConfig.RegisterBundles(BundleTable.Bundles);
 
             StackExchange.Profiling.EntityFramework6.MiniProfilerEF6.Initialize();
 
