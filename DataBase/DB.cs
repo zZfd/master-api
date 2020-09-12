@@ -1,8 +1,11 @@
-using System.Data.Entity;
-
 namespace DataBase
 {
-    public partial class DB : System.Data.Entity.DbContext
+    using System;
+    using System.Data.Entity;
+    using System.ComponentModel.DataAnnotations.Schema;
+    using System.Linq;
+
+    public partial class DB : DbContext
     {
         public DB()
             : base("name=DB")
@@ -16,6 +19,7 @@ namespace DataBase
         public virtual DbSet<MemRole> MemRole { get; set; }
         public virtual DbSet<Menu> Menu { get; set; }
         public virtual DbSet<Org> Org { get; set; }
+        public virtual DbSet<OrgMenu> OrgMenu { get; set; }
         public virtual DbSet<Role> Role { get; set; }
         public virtual DbSet<RoleMenu> RoleMenu { get; set; }
 
@@ -84,8 +88,10 @@ namespace DataBase
                 .IsUnicode(false);
 
             modelBuilder.Entity<Menu>()
-                .Property(e => e.Category)
-                .IsUnicode(false);
+                .HasMany(e => e.OrgMenu)
+                .WithRequired(e => e.Menu1)
+                .HasForeignKey(e => e.Menu)
+                .WillCascadeOnDelete(false);
 
             modelBuilder.Entity<Menu>()
                 .HasMany(e => e.RoleMenu)
@@ -97,9 +103,25 @@ namespace DataBase
                 .IsUnicode(false);
 
             modelBuilder.Entity<Org>()
+                .Property(e => e.Icon)
+                .IsUnicode(false);
+
+            modelBuilder.Entity<Org>()
                 .HasMany(e => e.MemOrg)
                 .WithRequired(e => e.Org1)
                 .HasForeignKey(e => e.Org);
+
+            modelBuilder.Entity<Org>()
+                .HasMany(e => e.OrgMenu)
+                .WithRequired(e => e.Org1)
+                .HasForeignKey(e => e.Org)
+                .WillCascadeOnDelete(false);
+
+            modelBuilder.Entity<Org>()
+                .HasMany(e => e.Role)
+                .WithRequired(e => e.Org1)
+                .HasForeignKey(e => e.Org)
+                .WillCascadeOnDelete(false);
 
             modelBuilder.Entity<Role>()
                 .Property(e => e.Icon)

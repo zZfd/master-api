@@ -14,6 +14,10 @@ namespace WebApi.Models
             已删除 = 2
         }
 
+        public enum CompanyId
+        {
+            默认 = 0
+        }
         //public enum MenuType
         //{
         //    根节点 = "ROOT",

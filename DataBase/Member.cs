@@ -24,6 +24,8 @@ namespace DataBase
         [StringLength(100)]
         public string Name { get; set; }
 
+        public long Phone { get; set; }
+
         [Required]
         [StringLength(500)]
         public string Password { get; set; }
@@ -32,17 +34,15 @@ namespace DataBase
         [StringLength(50)]
         public string PasswordSalt { get; set; }
 
-        [Required]
         [StringLength(50)]
         public string Code { get; set; }
 
-        [Required]
         [StringLength(100)]
         public string NickName { get; set; }
 
-        public DateTime LastFailTime { get; set; }
+        public DateTime? LastFailTime { get; set; }
 
-        public short FailTimes { get; set; }
+        public short? FailTimes { get; set; }
 
         [StringLength(500)]
         public string Avatar { get; set; }
