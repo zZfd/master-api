@@ -4,9 +4,9 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Web;
 
-namespace WebApi.Models.Request.Mini.Login
+namespace WebApi.Models.Request.Mini.Member
 {
-    public class LoginModel
+    public class Login
     {
         [Required]
         public string Username { get; set; }

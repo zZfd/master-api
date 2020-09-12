@@ -12,10 +12,10 @@ namespace Helper
     public static class LogHelper
     {
         /// <summary>
-        /// 写入程序代码错误日志
+        /// 程序代码错误日志
         /// </summary>
         /// <param name="ex"></param>
-        public static void WriteErrorLog(Exception ex)
+        public static void WriteErrorLog(Exception ex,string url = "")
         {
             try
             {
@@ -30,6 +30,8 @@ namespace Helper
                 if (ex.InnerException != null) { sw.WriteLine("Exception InnerException:" + ex.InnerException.Message); }
                 sw.WriteLine("Exception StackTrace:");
                 sw.WriteLine(ex.StackTrace);
+                sw.WriteLine("Exception Url:");
+                sw.WriteLine(url);
                 sw.WriteLine("=======================================================================================");
                 sw.WriteLine("");
                 sw.Close();//写入
@@ -41,7 +43,7 @@ namespace Helper
         }
 
         /// <summary>
-        /// 写入权限验证失败日志
+        /// 权限验证失败日志
         /// </summary>
         /// <param name="msg"></param>
         public static void WriteUnAuthorizationLog(string msg)

@@ -60,13 +60,12 @@ namespace Helper
         /// <param name="passwordSalt"></param>
         /// <param name="expires"></param>
         /// <returns></returns>
-        public static string CreateToken(Guid userId, string passwordSalt, int expires = 19 * 58 * 1000)
+        public static string CreateToken(Guid userId, string passwordSalt, int expires = 1958000)
         {
             string body = SHA1(userId.ToString("N") + passwordSalt, Encoding.UTF8, true);
             long origin = new DateTime(1970, 1, 1).Ticks;
             //13位时间戳 与js时间戳保持一致，精确到毫秒
             string now = ((DateTime.Now.ToUniversalTime().Ticks - origin) / 10000).ToString();
-            //expires精确到毫秒，保证7位有效位 分秒毫秒
             string expriesStr = expires.ToString();
             string token = string.Format("{0}{1}{2}{3}{4}",
                 now.Substring(0, 4), expriesStr.Substring(4), body,
@@ -93,7 +92,9 @@ namespace Helper
                 long origin = new DateTime(1970, 1, 1).Ticks;
                 long time = long.Parse(token.Substring(0, 4) + token.Substring(token.Length - 9));
                 long expires = long.Parse(token.Substring(token.Length - 13, 4) + token.Substring(4, 3));
-                return new DateTime(origin + (time + expires) * 10000).ToLocalTime() > DateTime.Now;
+                int min = (int)expires / 1000 / 100;//1958000
+                int seconds = (int)expires / 1000 % 100;
+                return new DateTime(origin + (time + min * 60 * 1000 + seconds * 1000) * 10000).ToLocalTime() > DateTime.Now;
             }
             catch (Exception ex)
             {

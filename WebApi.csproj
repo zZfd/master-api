@@ -157,18 +157,15 @@
     <Compile Include="App_Start\NamespaceSelector.cs" />
     <Compile Include="App_Start\SwaggerConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
-    <Compile Include="Controllers\Mini\LoginController.cs" />
-    <Compile Include="Filter\CheckFilter.cs" />
-    <Compile Include="Filter\Power.cs" />
+    <Compile Include="Controllers\Mini\MemberController.cs" />
+    <Compile Include="Filter\AuthorityFilter.cs" />
     <Compile Include="Filter\WebApiProfilingActionFilter.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Models\LoginModel.cs" />
-    <Compile Include="Models\MemberModel.cs" />
-    <Compile Include="Models\Menu\MenuModel.cs" />
-    <Compile Include="Models\Menu\MenuTree.cs" />
-    <Compile Include="Models\Request\Mini\Login\LoginModel.cs" />
+    <Compile Include="Models\Request\Mini\Member\Login.cs" />
+    <Compile Include="Models\Request\Mini\Menu\Menu.cs" />
+    <Compile Include="Models\Response\Mini\Menu\MenuTree.cs" />
     <Compile Include="Models\Setting.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
