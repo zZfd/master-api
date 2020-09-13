@@ -158,6 +158,7 @@
     <Compile Include="App_Start\SwaggerConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\Mini\MemberController.cs" />
+    <Compile Include="Controllers\Web\MenuController.cs" />
     <Compile Include="Filter\AuthorityFilter.cs" />
     <Compile Include="Filter\WebApiProfilingActionFilter.cs" />
     <Compile Include="Global.asax.cs">
@@ -165,7 +166,10 @@
     </Compile>
     <Compile Include="Models\Request\Mini\Member\Login.cs" />
     <Compile Include="Models\Request\Mini\Menu\Menu.cs" />
+    <Compile Include="Models\Request\Setting.cs" />
     <Compile Include="Models\Response\Mini\Menu\MenuTree.cs" />
+    <Compile Include="Models\Response\Setting.cs" />
+    <Compile Include="Models\Response\Web\Menu\Menu.cs" />
     <Compile Include="Models\Setting.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
