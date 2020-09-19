@@ -29,7 +29,7 @@ namespace WebApi.App_Start
         public static void InsertMenus(DataBase.DB db)
         {
             //添加菜单根节点
-            DataBase.Menu root = new DataBase.Menu
+            DataBase.Menus root = new DataBase.Menus
             {
                 Id = Guid.Parse("00000000-0000-0000-0001-000000000000"),
                 PId = Guid.Parse("00000000-0000-0000-0001-000000000000"),
@@ -42,12 +42,12 @@ namespace WebApi.App_Start
                 OrderNum = 1,
                 Status = Models.Config.Status.normal,
             };
-            db.Menu.Add(root);
+            db.Menus.Add(root);
         }
 
         public static void InsertOrgs(DataBase.DB db)
         {
-            DataBase.Org org = new DataBase.Org
+            DataBase.Orgs org = new DataBase.Orgs
             {
                 Id = new Guid("00000000-0000-0000-0001-000000000000"),
                 PId = new Guid("00000000-0000-0000-0001-000000000000"),
@@ -59,12 +59,12 @@ namespace WebApi.App_Start
                 OrderNum = 1
             };
             org.OrgMenu.Add(new DataBase.OrgMenu { Org = org.Id, Menu = Guid.Parse("00000000-0000-0000-0001-000000000000") });
-            db.Org.Add(org);
+            db.Orgs.Add(org);
         }
 
         public static void InsertRoles(DataBase.DB db)
         {
-            DataBase.Role manage = new DataBase.Role
+            DataBase.Roles manage = new DataBase.Roles
             {
                 Id = new Guid("00000000-0000-0000-0001-000000000000"),
                 PId = new Guid("00000000-0000-0000-0001-000000000000"),
@@ -77,12 +77,12 @@ namespace WebApi.App_Start
                 OrderNum = 1
             };
             manage.RoleMenu.Add(new DataBase.RoleMenu { Role = manage.Id, Menu = Guid.Parse("00000000-0000-0000-0001-000000000000") });
-            db.Role.Add(manage);
+            db.Roles.Add(manage);
         }
 
         public static void InsertMembers(DataBase.DB db)
         {
-            DataBase.Member manage = new DataBase.Member
+            DataBase.Members manage = new DataBase.Members
             {
                 Id = new Guid("00000000-0000-0001-0000-000000000000"),
                 Name = "admin",
@@ -100,7 +100,7 @@ namespace WebApi.App_Start
             };
             manage.MemRole.Add(new DataBase.MemRole { Member = manage.Id, Role = new Guid("00000000-0000-0000-0001-000000000000") });
             manage.MemOrg.Add(new DataBase.MemOrg { Member = manage.Id, Org = new Guid("00000000-0000-0000-0001-000000000000") });
-            db.Member.Add(manage);
+            db.Members.Add(manage);
         }
     }
 }

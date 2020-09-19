@@ -21,7 +21,7 @@ namespace WebApi.Controllers.Mini
         {
             if (ModelState.IsValid)
             {
-                Member loginer = db.Member.AsNoTracking().Where(p => p.Name == login.Username && p.Status == 0).FirstOrDefault();
+                Members loginer = db.Members.AsNoTracking().Where(p => p.Name == login.Username && p.Status == 0).FirstOrDefault();
                 if (loginer == null)
                 {
                     return Json(new { status = "fail", msg = "用户不存在" });

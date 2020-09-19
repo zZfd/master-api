@@ -15,8 +15,8 @@ namespace DataBase
 
         public Guid Role { get; set; }
 
-        public virtual Menu Menu1 { get; set; }
+        public virtual Menus Menus { get; set; }
 
-        public virtual Role Role1 { get; set; }
+        public virtual Roles Roles { get; set; }
     }
 }

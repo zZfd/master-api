@@ -6,8 +6,7 @@ namespace DataBase
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Data.Entity.Spatial;
 
-    [Table("Log")]
-    public partial class Log
+    public partial class Logs
     {
         public int Id { get; set; }
 
@@ -33,6 +32,6 @@ namespace DataBase
         [StringLength(2000)]
         public string UserAgent { get; set; }
 
-        public virtual Member Member1 { get; set; }
+        public virtual Members Members { get; set; }
     }
 }

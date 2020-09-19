@@ -15,8 +15,8 @@ namespace DataBase
 
         public Guid Menu { get; set; }
 
-        public virtual Menu Menu1 { get; set; }
+        public virtual Menus Menus { get; set; }
 
-        public virtual Org Org1 { get; set; }
+        public virtual Orgs Orgs { get; set; }
     }
 }

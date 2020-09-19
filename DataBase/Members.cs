@@ -6,14 +6,13 @@ namespace DataBase
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Data.Entity.Spatial;
 
-    [Table("Member")]
-    public partial class Member
+    public partial class Members
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
-        public Member()
+        public Members()
         {
-            Attachment = new HashSet<Attachment>();
-            Log = new HashSet<Log>();
+            Attachments = new HashSet<Attachments>();
+            Logs = new HashSet<Logs>();
             MemOrg = new HashSet<MemOrg>();
             MemRole = new HashSet<MemRole>();
         }
@@ -50,10 +49,10 @@ namespace DataBase
         public short Status { get; set; }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<Attachment> Attachment { get; set; }
+        public virtual ICollection<Attachments> Attachments { get; set; }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<Log> Log { get; set; }
+        public virtual ICollection<Logs> Logs { get; set; }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<MemOrg> MemOrg { get; set; }

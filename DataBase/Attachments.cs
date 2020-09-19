@@ -6,8 +6,7 @@ namespace DataBase
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Data.Entity.Spatial;
 
-    [Table("Attachment")]
-    public partial class Attachment
+    public partial class Attachments
     {
         public Guid Id { get; set; }
 
@@ -37,6 +36,6 @@ namespace DataBase
         [StringLength(100)]
         public string FileType { get; set; }
 
-        public virtual Member Member { get; set; }
+        public virtual Members Members { get; set; }
     }
 }

@@ -15,8 +15,8 @@ namespace DataBase
 
         public Guid Org { get; set; }
 
-        public virtual Member Member1 { get; set; }
+        public virtual Members Members { get; set; }
 
-        public virtual Org Org1 { get; set; }
+        public virtual Orgs Orgs { get; set; }
     }
 }

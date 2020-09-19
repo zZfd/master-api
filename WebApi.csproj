@@ -158,7 +158,6 @@
     <Compile Include="App_Start\SwaggerConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\Mini\MemberController.cs" />
-    <Compile Include="Controllers\Web\AttachmentsController.cs" />
     <Compile Include="Controllers\Web\MemberController.cs" />
     <Compile Include="Controllers\Web\MenuController.cs" />
     <Compile Include="Controllers\Web\OrgController.cs" />

@@ -26,14 +26,14 @@ namespace WebApi.Controllers.Web
         {
             if (ModelState.IsValid)
             {
-                var pMenu = await db.Menu.FindAsync(menu.PId);
+                var pMenu = await db.Menus.FindAsync(menu.PId);
                 if (pMenu == null)
                 {
                     //父节点非法
                     return Json(new { status = "fail", msg = "保存失败" });
                 }
 
-                DataBase.Menu menuDB = new DataBase.Menu
+                DataBase.Menus menuDB = new DataBase.Menus
                 {
                     Id = Guid.NewGuid(),
                     PId = menu.PId,
@@ -76,14 +76,14 @@ namespace WebApi.Controllers.Web
         {
             if (ModelState.IsValid)
             {
-                DataBase.Menu menuDB = await db.Menu.FindAsync(menu.Id);
+                DataBase.Menus menuDB = await db.Menus.FindAsync(menu.Id);
                 if (menuDB == null || menuDB.Id == Guid.Parse("00000000-0000-0000-0001-000000000000"))
                 {
                     //节点非法
                     //根部门不允许修改
                     return Json(new { status = "fail", msg = "请求参数错误" });
                 }
-                var pMenu = await db.Menu.FindAsync(menu.PId);
+                var pMenu = await db.Menus.FindAsync(menu.PId);
                 if (pMenu == null)
                 {
                     //父节点非法
@@ -130,7 +130,7 @@ namespace WebApi.Controllers.Web
         {
             if (ModelState.IsValid)
             {
-                DataBase.Menu menuDB = await db.Menu.FindAsync(menuStatus.Id);
+                DataBase.Menus menuDB = await db.Menus.FindAsync(menuStatus.Id);
                 if (menuDB == null || menuStatus.Id == Guid.Parse("00000000-0000-0000-0001-000000000000"))
                 {
                     //根部门不许操作
@@ -179,7 +179,7 @@ namespace WebApi.Controllers.Web
                 {
                     //第一次加载
                     //根据用户角色查找所有的分支menu
-                    var menuPIds = db.Menu.Where(m => menuIds.Contains(m.Id) && !menuIds.Contains(m.PId)).OrderBy(m => m.OrderNum).Select(m => new MenuRes.Menu
+                    var menuPIds = db.Menus.Where(m => menuIds.Contains(m.Id) && !menuIds.Contains(m.PId)).OrderBy(m => m.OrderNum).Select(m => new MenuRes.Menu
                     {
                         Id = m.Id,
                         PId = m.PId,
@@ -191,7 +191,7 @@ namespace WebApi.Controllers.Web
                         OrderNum = m.OrderNum,
                         Status = m.Status,
                         //判断menu中是否有子节点
-                        HasChildren = db.Menu.FirstOrDefault(mc => mc.PId == m.Id && menuIds.Contains(mc.Id) && mc.Status != Models.Config.Status.deleted) != null,
+                        HasChildren = db.Menus.FirstOrDefault(mc => mc.PId == m.Id && menuIds.Contains(mc.Id) && mc.Status != Models.Config.Status.deleted) != null,
                         //RoleCount = 0,
                         //OrgCount = 0,
                         //MemberCount = 0
@@ -207,7 +207,7 @@ namespace WebApi.Controllers.Web
                         return Json(new { status = "fail", msg = "权限不足" });
                     }
 
-                    var content = from m in db.Menu
+                    var content = from m in db.Menus
                                   where m.PId == pId && menuIds.Contains(m.Id) && m.Status != Models.Config.Status.deleted
                                   orderby m.OrderNum
                                   select new MenuRes.Menu
@@ -222,7 +222,7 @@ namespace WebApi.Controllers.Web
                                       OrderNum = m.OrderNum,
                                       Status = m.Status,
                                       //判断menu中是否有子节点
-                                      HasChildren = db.Menu.FirstOrDefault(mc => mc.PId == m.Id && menuIds.Contains(mc.Id) && mc.Status != Models.Config.Status.deleted) != null,
+                                      HasChildren = db.Menus.FirstOrDefault(mc => mc.PId == m.Id && menuIds.Contains(mc.Id) && mc.Status != Models.Config.Status.deleted) != null,
                                       //RoleCount = 0,
                                       //OrgCount = 0,
                                       //MemberCount = 0
@@ -258,7 +258,7 @@ namespace WebApi.Controllers.Web
             {
                 return Json(new { status = "fail", msg = "查询为空" });
             }
-            var menus = (from m in db.Menu
+            var menus = (from m in db.Menus
                          where menuIds.Contains(m.Id) && m.Status == Models.Config.Status.normal
                          select new MenuRes.Menu
                          {
@@ -305,7 +305,7 @@ namespace WebApi.Controllers.Web
             {
                 return Json(new { status = "fail", msg = "查询为空" });
             }
-            var menus = (from m in db.Menu
+            var menus = (from m in db.Menus
                          where m.Status == Models.Config.Status.normal && menuIds.Contains(m.Id)
                          select new MenuRes.Menu
                          {
@@ -353,7 +353,7 @@ namespace WebApi.Controllers.Web
             {
                 return Json(new { status = "fail", msg = "查询为空" });
             }
-            var menus = (from m in db.Menu
+            var menus = (from m in db.Menus
                          where menuIds.Contains(m.Id) && m.Status == Models.Config.Status.normal && m.Type != Models.Config.MenuType.button
                          select new MenuRes.Menu
                          {
@@ -402,7 +402,7 @@ namespace WebApi.Controllers.Web
         //    {
         //        return Json(new { status = "fail", msg = "查询为空" });
         //    }
-        //    var menus = (from m in db.Menu
+        //    var menus = (from m in db.Menus
         //                 where menuIds.Contains(m.Id) && m.Status == Models.Config.Status.normal && m.Type != "BUTTON"
         //                 select new MenuRes.Menu
         //                 {

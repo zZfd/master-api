@@ -33,9 +33,9 @@ namespace WebApi.Filter
                 string token = actionContext.Request.Headers.GetValues("X-Token").First();
                 using (DataBase.DB db = new DataBase.DB())
                 {
-                    var user = db.Member.Find(userId);
+                    var user = db.Members.Find(userId);
                     //token校验成功
-                    if (user.Status == (short)Models.Setting.NormalStauts.正常 && Helper.EncryptionHelper.CheckToken(token, userId, user.PasswordSalt))
+                    if (user.Status == Models.Config.Status.normal && Helper.EncryptionHelper.CheckToken(token, userId, user.PasswordSalt))
                     {
                         return;
                     }
@@ -72,12 +72,12 @@ namespace WebApi.Filter
         /// <returns></returns>
         public bool Menu(Guid menuId, Guid memberId, DataBase.DB db)
         {
-            var menu = db.Menu.Find(menuId);
-            if (menu == null || menu.Status != (short)Models.Setting.NormalStauts.正常) return false;
+            var menu = db.Menus.Find(menuId);
+            if (menu == null || menu.Status != Models.Config.Status.normal) return false;
 
-            foreach (var memRole in db.Member.Find(memberId).MemRole)
+            foreach (var memRole in db.Members.Find(memberId).MemRole)
             {
-                foreach (var roleMenu in memRole.Role1.RoleMenu)
+                foreach (var roleMenu in memRole.Roles.RoleMenu)
                 {
                     if (menuId == roleMenu.Menu)
                     {
@@ -87,12 +87,12 @@ namespace WebApi.Filter
             }
             return false;
 
-            //List<Guid> memberMenusIds = (from menus in db.Menu
+            //List<Guid> memberMenusIds = (from menus in db.Menus
             //                             orderby menus.OrderNum
             //                             where (
             //                                 from rolemenus in db.RoleMenu
             //                                 where (
-            //                                     from role in db.Role
+            //                                     from role in db.Roles
             //                                     where (
             //                                        from roles in db.MemRole
             //                                        where roles.Member == memberId

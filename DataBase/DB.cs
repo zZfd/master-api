@@ -12,129 +12,129 @@ namespace DataBase
         {
         }
 
-        public virtual DbSet<Attachment> Attachment { get; set; }
-        public virtual DbSet<Log> Log { get; set; }
-        public virtual DbSet<Member> Member { get; set; }
+        public virtual DbSet<Attachments> Attachments { get; set; }
+        public virtual DbSet<Logs> Logs { get; set; }
+        public virtual DbSet<Members> Members { get; set; }
         public virtual DbSet<MemOrg> MemOrg { get; set; }
         public virtual DbSet<MemRole> MemRole { get; set; }
-        public virtual DbSet<Menu> Menu { get; set; }
-        public virtual DbSet<Org> Org { get; set; }
+        public virtual DbSet<Menus> Menus { get; set; }
         public virtual DbSet<OrgMenu> OrgMenu { get; set; }
-        public virtual DbSet<Role> Role { get; set; }
+        public virtual DbSet<Orgs> Orgs { get; set; }
         public virtual DbSet<RoleMenu> RoleMenu { get; set; }
+        public virtual DbSet<Roles> Roles { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Attachment>()
+            modelBuilder.Entity<Attachments>()
                 .Property(e => e.FileName)
                 .IsUnicode(false);
 
-            modelBuilder.Entity<Attachment>()
+            modelBuilder.Entity<Attachments>()
                 .Property(e => e.FileExt)
                 .IsUnicode(false);
 
-            modelBuilder.Entity<Attachment>()
+            modelBuilder.Entity<Attachments>()
                 .Property(e => e.AttachmentType)
                 .IsUnicode(false);
 
-            modelBuilder.Entity<Attachment>()
+            modelBuilder.Entity<Attachments>()
                 .Property(e => e.FileType)
                 .IsUnicode(false);
 
-            modelBuilder.Entity<Log>()
+            modelBuilder.Entity<Logs>()
                 .Property(e => e.IP)
                 .IsUnicode(false);
 
-            modelBuilder.Entity<Log>()
+            modelBuilder.Entity<Logs>()
                 .Property(e => e.UserAgent)
                 .IsUnicode(false);
 
-            modelBuilder.Entity<Member>()
+            modelBuilder.Entity<Members>()
                 .Property(e => e.PasswordSalt)
                 .IsUnicode(false);
 
-            modelBuilder.Entity<Member>()
+            modelBuilder.Entity<Members>()
                 .Property(e => e.Code)
                 .IsUnicode(false);
 
-            modelBuilder.Entity<Member>()
+            modelBuilder.Entity<Members>()
                 .Property(e => e.Avatar)
                 .IsUnicode(false);
 
-            modelBuilder.Entity<Member>()
-                .HasMany(e => e.Attachment)
-                .WithRequired(e => e.Member)
+            modelBuilder.Entity<Members>()
+                .HasMany(e => e.Attachments)
+                .WithRequired(e => e.Members)
                 .HasForeignKey(e => e.UpAccount)
                 .WillCascadeOnDelete(false);
 
-            modelBuilder.Entity<Member>()
-                .HasMany(e => e.Log)
-                .WithRequired(e => e.Member1)
+            modelBuilder.Entity<Members>()
+                .HasMany(e => e.Logs)
+                .WithRequired(e => e.Members)
                 .HasForeignKey(e => e.Member)
                 .WillCascadeOnDelete(false);
 
-            modelBuilder.Entity<Member>()
+            modelBuilder.Entity<Members>()
                 .HasMany(e => e.MemOrg)
-                .WithRequired(e => e.Member1)
+                .WithRequired(e => e.Members)
                 .HasForeignKey(e => e.Member);
 
-            modelBuilder.Entity<Member>()
+            modelBuilder.Entity<Members>()
                 .HasMany(e => e.MemRole)
-                .WithRequired(e => e.Member1)
+                .WithRequired(e => e.Members)
                 .HasForeignKey(e => e.Member);
 
-            modelBuilder.Entity<Menu>()
+            modelBuilder.Entity<Menus>()
                 .Property(e => e.Code)
                 .IsUnicode(false);
 
-            modelBuilder.Entity<Menu>()
+            modelBuilder.Entity<Menus>()
                 .HasMany(e => e.OrgMenu)
-                .WithRequired(e => e.Menu1)
+                .WithRequired(e => e.Menus)
                 .HasForeignKey(e => e.Menu)
                 .WillCascadeOnDelete(false);
 
-            modelBuilder.Entity<Menu>()
+            modelBuilder.Entity<Menus>()
                 .HasMany(e => e.RoleMenu)
-                .WithRequired(e => e.Menu1)
+                .WithRequired(e => e.Menus)
                 .HasForeignKey(e => e.Menu);
 
-            modelBuilder.Entity<Org>()
+            modelBuilder.Entity<Orgs>()
                 .Property(e => e.Code)
                 .IsUnicode(false);
 
-            modelBuilder.Entity<Org>()
+            modelBuilder.Entity<Orgs>()
                 .Property(e => e.Icon)
                 .IsUnicode(false);
 
-            modelBuilder.Entity<Org>()
+            modelBuilder.Entity<Orgs>()
                 .HasMany(e => e.MemOrg)
-                .WithRequired(e => e.Org1)
+                .WithRequired(e => e.Orgs)
                 .HasForeignKey(e => e.Org);
 
-            modelBuilder.Entity<Org>()
+            modelBuilder.Entity<Orgs>()
                 .HasMany(e => e.OrgMenu)
-                .WithRequired(e => e.Org1)
+                .WithRequired(e => e.Orgs)
                 .HasForeignKey(e => e.Org)
                 .WillCascadeOnDelete(false);
 
-            modelBuilder.Entity<Org>()
-                .HasMany(e => e.Role)
-                .WithRequired(e => e.Org1)
+            modelBuilder.Entity<Orgs>()
+                .HasMany(e => e.Roles)
+                .WithRequired(e => e.Orgs)
                 .HasForeignKey(e => e.Org)
                 .WillCascadeOnDelete(false);
 
-            modelBuilder.Entity<Role>()
+            modelBuilder.Entity<Roles>()
                 .Property(e => e.Icon)
                 .IsUnicode(false);
 
-            modelBuilder.Entity<Role>()
+            modelBuilder.Entity<Roles>()
                 .HasMany(e => e.MemRole)
-                .WithRequired(e => e.Role1)
+                .WithRequired(e => e.Roles)
                 .HasForeignKey(e => e.Role);
 
-            modelBuilder.Entity<Role>()
+            modelBuilder.Entity<Roles>()
                 .HasMany(e => e.RoleMenu)
-                .WithRequired(e => e.Role1)
+                .WithRequired(e => e.Roles)
                 .HasForeignKey(e => e.Role);
         }
     }

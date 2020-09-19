@@ -27,7 +27,7 @@ namespace WebApi.Controllers.Web
             try
             {
                 var orgIds = db.MemOrg.Where(mo => mo.Member == userId).Select(mo => mo.Org).ToList();
-                var orgs = db.Org.Where(o => o.Status == Models.Config.Status.normal && (orgIds.Contains(o.Id) || orgIds.Contains(o.PId))).OrderBy(o=>o.OrderNum).Select(o => new OrgRes.Org
+                var orgs = db.Orgs.Where(o => o.Status == Models.Config.Status.normal && (orgIds.Contains(o.Id) || orgIds.Contains(o.PId))).OrderBy(o=>o.OrderNum).Select(o => new OrgRes.Org
                 {
                     Id = o.Id,
                     PId = o.PId,
@@ -100,7 +100,7 @@ namespace WebApi.Controllers.Web
             if (pId == Guid.Empty)
             {
                 //第一次加载
-                var orgs = db.MemOrg.Where(mo => mo.Member == userId).Join(db.Org.Where(o => o.Status != Models.Config.Status.deleted).OrderBy(o=>o.OrderNum), mo => mo.Org, o => o.Id, (mo, o) => new
+                var orgs = db.MemOrg.Where(mo => mo.Member == userId).Join(db.Orgs.Where(o => o.Status != Models.Config.Status.deleted).OrderBy(o=>o.OrderNum), mo => mo.Org, o => o.Id, (mo, o) => new
                 {
                     o.Id,
                     o.PId,
@@ -109,22 +109,22 @@ namespace WebApi.Controllers.Web
                     o.Code,
                     o.Status,
                     o.OrderNum,
-                    MemberCount = db.MemOrg.Where(mo2 => mo2.Org == o.Id).Select(mo2=>mo2.Member).Intersect(db.Member.Where(mem=>mem.Status == Models.Config.Status.normal).Select(mem=>mem.Id)).Count(),
-                    MenuCount = db.OrgMenu.Where(om => om.Org == o.Id).Select(om => om.Menu).Intersect(db.Menu.Where(menu => menu.Status == Models.Config.Status.normal).Select(menu => menu.Id)).Count(),
-                    RoleCount = db.Role.Where(role=>role.Org == o.Id && role.Status == Models.Config.Status.normal).Count(),
-                    HasChildren = db.Org.Where(org=>org.PId == o.Id && org.Status != Models.Config.Status.deleted).Any()
+                    MemberCount = db.MemOrg.Where(mo2 => mo2.Org == o.Id).Select(mo2=>mo2.Member).Intersect(db.Members.Where(mem=>mem.Status == Models.Config.Status.normal).Select(mem=>mem.Id)).Count(),
+                    MenuCount = db.OrgMenu.Where(om => om.Org == o.Id).Select(om => om.Menu).Intersect(db.Menus.Where(menu => menu.Status == Models.Config.Status.normal).Select(menu => menu.Id)).Count(),
+                    RoleCount = db.Roles.Where(role=>role.Org == o.Id && role.Status == Models.Config.Status.normal).Count(),
+                    HasChildren = db.Orgs.Where(org=>org.PId == o.Id && org.Status != Models.Config.Status.deleted).Any()
                 });
                 return Json(new { status = "success", msg = "获取成功", content = orgs });
             }
             else
             {
                     var powerOrg = db.MemOrg.Where(mo => mo.Member == userId).Select(mo => mo.Org);
-                    var powerOrgs = powerOrg.Concat(db.Org.Where(o => powerOrg.Contains(o.PId) && o.Status != Models.Config.Status.deleted).Select(o => o.Id));
+                    var powerOrgs = powerOrg.Concat(db.Orgs.Where(o => powerOrg.Contains(o.PId) && o.Status != Models.Config.Status.deleted).Select(o => o.Id));
                     if (!powerOrgs.Contains(pId))
                     {
                         return Json(new { status = "fail", msg = "获取失败" });
                     }
-                  var orgs = db.Org.Where(o => o.Id == pId && o.Status != Models.Config.Status.deleted).Select( o => new
+                  var orgs = db.Orgs.Where(o => o.Id == pId && o.Status != Models.Config.Status.deleted).Select( o => new
                 {
                     o.Id,
                     o.PId,
@@ -134,10 +134,10 @@ namespace WebApi.Controllers.Web
                     o.Status,
                     o.OrderNum,
                     //只统计正常的
-                    MemberCount = db.MemOrg.Where(mo2 => mo2.Org == o.Id).Select(mo2 => mo2.Member).Intersect(db.Member.Where(mem => mem.Status == Models.Config.Status.normal).Select(mem => mem.Id)).Count(),
-                    MenuCount = db.OrgMenu.Where(om => om.Org == o.Id).Select(om => om.Menu).Intersect(db.Menu.Where(menu => menu.Status == Models.Config.Status.normal).Select(menu => menu.Id)).Count(),
-                    RoleCount = db.Role.Where(role => role.Org == o.Id && role.Status == Models.Config.Status.normal).Count(),
-                    HasChildren = db.Org.Where(org => org.PId == o.Id && org.Status != Models.Config.Status.deleted).Any()
+                    MemberCount = db.MemOrg.Where(mo2 => mo2.Org == o.Id).Select(mo2 => mo2.Member).Intersect(db.Members.Where(mem => mem.Status == Models.Config.Status.normal).Select(mem => mem.Id)).Count(),
+                    MenuCount = db.OrgMenu.Where(om => om.Org == o.Id).Select(om => om.Menu).Intersect(db.Menus.Where(menu => menu.Status == Models.Config.Status.normal).Select(menu => menu.Id)).Count(),
+                    RoleCount = db.Roles.Where(role => role.Org == o.Id && role.Status == Models.Config.Status.normal).Count(),
+                    HasChildren = db.Orgs.Where(org => org.PId == o.Id && org.Status != Models.Config.Status.deleted).Any()
                 });
                 return Json(new { status = "success", msg = "获取成功", content = orgs });
             }
@@ -158,18 +158,18 @@ namespace WebApi.Controllers.Web
         {
             if (ModelState.IsValid)
             {
-                var pOrg = await db.Role.FindAsync(org.PId);
+                var pOrg = await db.Roles.FindAsync(org.PId);
                 if (pOrg == null)
                 {
                     //父节点非法
                     return Json(new { status = "fail", msg = "保存失败" });
                 }
-                if (db.Menu.Where(m => m.Status == Models.Config.Status.normal).Select(m => m.Id).Intersect(org.Menus).Count() != org.Menus.Count())
+                if (db.Menus.Where(m => m.Status == Models.Config.Status.normal).Select(m => m.Id).Intersect(org.Menus).Count() != org.Menus.Count())
                 {
                     //菜单非法
                     return Json(new { status = "fail", msg = "保存失败" });
                 }
-                DataBase.Org orgDB = new DataBase.Org
+                DataBase.Orgs orgDB = new DataBase.Orgs
                 {
                     Id = Guid.NewGuid(),
                     PId = org.PId,
@@ -214,20 +214,20 @@ namespace WebApi.Controllers.Web
         {
             if (ModelState.IsValid)
             {
-                DataBase.Org orgDB = await db.Org.FindAsync(org.Id);
+                DataBase.Orgs orgDB = await db.Orgs.FindAsync(org.Id);
                 if (orgDB == null || org.Id == Guid.Parse("00000000-0000-0000-0001-000000000000"))
                 {
                     //节点非法
                     //根部门不允许修改
                     return Json(new { status = "fail", msg = "请求参数错误" });
                 }
-                var pOrg = await db.Role.FindAsync(org.PId);
+                var pOrg = await db.Roles.FindAsync(org.PId);
                 if (pOrg == null)
                 {
                     //父节点非法
                     return Json(new { status = "fail", msg = "保存失败" });
                 }
-                if (db.Menu.Where(m => m.Status == Models.Config.Status.normal).Select(m => m.Id).Intersect(org.Menus).Count() != org.Menus.Count())
+                if (db.Menus.Where(m => m.Status == Models.Config.Status.normal).Select(m => m.Id).Intersect(org.Menus).Count() != org.Menus.Count())
                 {
                     //菜单非法
                     return Json(new { status = "fail", msg = "保存失败" });
@@ -274,7 +274,7 @@ namespace WebApi.Controllers.Web
         {
             if (ModelState.IsValid)
             {
-                DataBase.Org orgDB = await db.Org.FindAsync(orgStatus.Id);
+                DataBase.Orgs orgDB = await db.Orgs.FindAsync(orgStatus.Id);
                 if (orgDB == null || orgStatus.Id == Guid.Parse("00000000-0000-0000-0001-000000000000"))
                 {
                     //根部门不许操作
@@ -286,7 +286,7 @@ namespace WebApi.Controllers.Web
                     //删除
                     orgDB.OrgMenu = new List<DataBase.OrgMenu>();
                     orgDB.MemOrg = new List<DataBase.MemOrg>();
-                    orgDB.Role = new List<DataBase.Role>();
+                    orgDB.Roles = new List<DataBase.Roles>();
                 }
                 db.Entry(orgDB).State = System.Data.Entity.EntityState.Modified;
                 try

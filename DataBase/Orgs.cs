@@ -6,14 +6,14 @@ namespace DataBase
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Data.Entity.Spatial;
 
-    [Table("Menu")]
-    public partial class Menu
+    public partial class Orgs
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
-        public Menu()
+        public Orgs()
         {
+            MemOrg = new HashSet<MemOrg>();
             OrgMenu = new HashSet<OrgMenu>();
-            RoleMenu = new HashSet<RoleMenu>();
+            Roles = new HashSet<Roles>();
         }
 
         public Guid Id { get; set; }
@@ -21,32 +21,26 @@ namespace DataBase
         public Guid PId { get; set; }
 
         [Required]
-        [StringLength(100)]
+        [StringLength(200)]
         public string Name { get; set; }
 
-        [StringLength(1000)]
-        public string Controller { get; set; }
-
-        [StringLength(1000)]
-        public string Action { get; set; }
-
-        public short Type { get; set; }
-
-        [Required]
         [StringLength(2000)]
         public string Code { get; set; }
 
-        [StringLength(500)]
+        [StringLength(2000)]
         public string Icon { get; set; }
+
+        public short Status { get; set; }
 
         public short OrderNum { get; set; }
 
-        public short Status { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<MemOrg> MemOrg { get; set; }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<OrgMenu> OrgMenu { get; set; }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<RoleMenu> RoleMenu { get; set; }
+        public virtual ICollection<Roles> Roles { get; set; }
     }
 }

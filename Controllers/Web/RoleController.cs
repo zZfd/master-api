@@ -28,7 +28,7 @@ namespace WebApi.Controllers.Web
             try
             {
                 var roleIds = db.MemOrg.Where(mo => mo.Member == userId).Select(mo => mo.Org).ToList();
-                var roles = db.Role.Where(r => r.Status == Models.Config.Status.normal && (roleIds.Contains(r.Id) || roleIds.Contains(r.PId))).OrderBy(r=>r.OrderNum).Select(o => new RoleRes.Role
+                var roles = db.Roles.Where(r => r.Status == Models.Config.Status.normal && (roleIds.Contains(r.Id) || roleIds.Contains(r.PId))).OrderBy(r=>r.OrderNum).Select(o => new RoleRes.Role
                 {
                     Id = o.Id,
                     PId = o.PId,
@@ -98,7 +98,7 @@ namespace WebApi.Controllers.Web
                 if (pId == Guid.Empty)
                 {
                     //第一次加载
-                    var roles = db.MemRole.Where(mr => mr.Member == userId).Join(db.Role.Where(r => r.Status != Models.Config.Status.deleted).OrderBy(r => r.OrderNum), mr => mr.Role, r => r.Id, (mr, r)=>
+                    var roles = db.MemRole.Where(mr => mr.Member == userId).Join(db.Roles.Where(r => r.Status != Models.Config.Status.deleted).OrderBy(r => r.OrderNum), mr => mr.Role, r => r.Id, (mr, r)=>
                       new
                       {
                           r.Id,
@@ -109,21 +109,21 @@ namespace WebApi.Controllers.Web
                           r.Org,
                           r.Status,
                           r.OrderNum,
-                          MemberCount = db.MemRole.Where(mr2 => mr2.Role == r.Id).Select(mr2 => mr.Member).Intersect(db.Member.Where(mem => mem.Status == Models.Config.Status.normal).Select(mem => mem.Id)).Count(),
-                          MenuCount = db.RoleMenu.Where(rm => rm.Role == r.Id).Select(om => om.Menu).Intersect(db.Menu.Where(menu => menu.Status == Models.Config.Status.normal).Select(menu => menu.Id)).Count(),
-                          HasChildren = db.Role.Where(r2 => r2.PId == r.Id && r2.Status != Models.Config.Status.deleted).Any()
+                          MemberCount = db.MemRole.Where(mr2 => mr2.Role == r.Id).Select(mr2 => mr.Member).Intersect(db.Members.Where(mem => mem.Status == Models.Config.Status.normal).Select(mem => mem.Id)).Count(),
+                          MenuCount = db.RoleMenu.Where(rm => rm.Role == r.Id).Select(om => om.Menu).Intersect(db.Menus.Where(menu => menu.Status == Models.Config.Status.normal).Select(menu => menu.Id)).Count(),
+                          HasChildren = db.Roles.Where(r2 => r2.PId == r.Id && r2.Status != Models.Config.Status.deleted).Any()
                       });
                     return Json(new { status = "success", msg = "获取成功", content = roles });
                 }
                 else
                 {
                     var powerRole = db.MemRole.Where(mr => mr.Member == userId).Select(mr => mr.Role);
-                    var powerRoles = powerRole.Concat(db.Role.Where(r => powerRole.Contains(r.PId) && r.Status != Models.Config.Status.deleted).Select(r => r.Id));
+                    var powerRoles = powerRole.Concat(db.Roles.Where(r => powerRole.Contains(r.PId) && r.Status != Models.Config.Status.deleted).Select(r => r.Id));
                     if (!powerRoles.Contains(pId))
                     {
                         return Json(new { status = "fail", msg = "获取失败" });
                     }
-                    var roles = db.Role.Where(r => r.Id == pId && r.Status != Models.Config.Status.deleted).Select(r => new
+                    var roles = db.Roles.Where(r => r.Id == pId && r.Status != Models.Config.Status.deleted).Select(r => new
                     {
                         r.Id,
                         r.PId,
@@ -133,9 +133,9 @@ namespace WebApi.Controllers.Web
                         r.Org,
                         r.Status,
                         r.OrderNum,
-                        MemberCount = db.MemRole.Where(mr2 => mr2.Role == r.Id).Select(mr2 => mr2.Member).Intersect(db.Member.Where(mem => mem.Status == Models.Config.Status.normal).Select(mem => mem.Id)).Count(),
-                        MenuCount = db.RoleMenu.Where(rm => rm.Role == r.Id).Select(om => om.Menu).Intersect(db.Menu.Where(menu => menu.Status == Models.Config.Status.normal).Select(menu => menu.Id)).Count(),
-                        HasChildren = db.Role.Where(r2 => r2.PId == r.Id && r2.Status != Models.Config.Status.deleted).Any()
+                        MemberCount = db.MemRole.Where(mr2 => mr2.Role == r.Id).Select(mr2 => mr2.Member).Intersect(db.Members.Where(mem => mem.Status == Models.Config.Status.normal).Select(mem => mem.Id)).Count(),
+                        MenuCount = db.RoleMenu.Where(rm => rm.Role == r.Id).Select(om => om.Menu).Intersect(db.Menus.Where(menu => menu.Status == Models.Config.Status.normal).Select(menu => menu.Id)).Count(),
+                        HasChildren = db.Roles.Where(r2 => r2.PId == r.Id && r2.Status != Models.Config.Status.deleted).Any()
                     });
                     return Json(new { status = "success", msg = "获取成功", content = roles });
                 }
@@ -157,17 +157,17 @@ namespace WebApi.Controllers.Web
         {
             if (ModelState.IsValid)
             {
-                var pRole =  await db.Role.FindAsync(role.PId);
+                var pRole =  await db.Roles.FindAsync(role.PId);
                 if(pRole == null)
                 {
                     //父节点非法
                     return Json(new { status = "fail", msg = "保存失败" });
                 }
-                if(db.Menu.Where(m=>m.Status == Models.Config.Status.normal).Select(m => m.Id).Intersect(role.Menus).Count() != role.Menus.Count()){
+                if(db.Menus.Where(m=>m.Status == Models.Config.Status.normal).Select(m => m.Id).Intersect(role.Menus).Count() != role.Menus.Count()){
                     //菜单非法
                     return Json(new { status = "fail", msg = "保存失败" });
                 }
-                DataBase.Role roleDB = new DataBase.Role
+                DataBase.Roles roleDB = new DataBase.Roles
                 {
                     Id = Guid.NewGuid(),
                     PId = role.PId,
@@ -212,20 +212,20 @@ namespace WebApi.Controllers.Web
         {
             if (ModelState.IsValid)
             {
-                DataBase.Role roleDB = await db.Role.FindAsync(role.Id);
+                DataBase.Roles roleDB = await db.Roles.FindAsync(role.Id);
                 if (roleDB == null || roleDB.Id == Guid.Parse("00000000-0000-0000-0001-000000000000"))
                 {
                     //节点非法
                     //根部门不允许修改
                     return Json(new { status = "fail", msg = "请求参数错误" });
                 }
-                var pRole = await db.Role.FindAsync(role.PId);
+                var pRole = await db.Roles.FindAsync(role.PId);
                 if (pRole == null)
                 {
                     //父节点非法
                     return Json(new { status = "fail", msg = "保存失败" });
                 }
-                if (db.Menu.Where(m => m.Status == Models.Config.Status.normal).Select(m => m.Id).Intersect(role.Menus).Count() != role.Menus.Count())
+                if (db.Menus.Where(m => m.Status == Models.Config.Status.normal).Select(m => m.Id).Intersect(role.Menus).Count() != role.Menus.Count())
                 {
                     //菜单非法
                     return Json(new { status = "fail", msg = "保存失败" });
@@ -273,7 +273,7 @@ namespace WebApi.Controllers.Web
         {
             if (ModelState.IsValid)
             {
-                DataBase.Role roleDB = await db.Role.FindAsync(roleStatus.Id);
+                DataBase.Roles roleDB = await db.Roles.FindAsync(roleStatus.Id);
                 if (roleDB == null || roleStatus.Id == Guid.Parse("00000000-0000-0000-0001-000000000000"))
                 {
                     //根部门不许操作
