@@ -13,19 +13,19 @@ namespace WebApi.Controllers.Web
     {
         private readonly DataBase.DB db = new DataBase.DB();
         /// <summary>
-        /// 懒加载获取用户菜单
+        /// 懒加载获取用户角色菜单
         /// </summary>
-        /// <param name="PId"></param>
+        /// <param name="pId"></param>
         /// <returns></returns>
         [HttpGet]
-        public IHttpActionResult LazyMenu(Guid PId)
+        public IHttpActionResult LazyMenu(Guid pId)
         {
-            if(PId == Guid.Empty)
+            if(pId == Guid.Empty)
             {
                 return Json(new { status = "fail", msg = "参数错误" });
             }
-            var menu = db.Menu.Find(PId);
-            if (menu.Status == (short)Models.Setting.NormalStauts.已删除)
+            var menu = db.Menu.Find(pId);
+            if (menu.Status == Models.Config.Status.deleted)
             {
                 return Json(new { status = "fail", msg = "查询为空" });
             }
@@ -41,14 +41,14 @@ namespace WebApi.Controllers.Web
                 return Json(new { status = "fail", msg = "查询为空" });
             }
             //判断所查menu是否存在
-            bool isOwned = menuIds.Contains(PId);
+            bool isOwned = menuIds.Contains(pId);
             if (!isOwned)
             {
                 return Json(new { status = "fail", msg = "权限不足" });
             }
            
             var content = from m in db.Menu
-                          where m.PId == PId && menuIds.Contains(m.Id) && m.Status != (short)Models.Setting.NormalStauts.已删除
+                          where m.PId == pId && menuIds.Contains(m.Id) && m.Status != Models.Config.Status.deleted
                           orderby m.OrderNum
                           select new MenuRes.Menu
                           {
@@ -63,18 +63,21 @@ namespace WebApi.Controllers.Web
                               OrderNum = m.OrderNum,
                               Status = m.Status,
                               //判断menu中是否有子节点
-                              HasChildren = db.Menu.FirstOrDefault(mc => mc.PId == m.Id && menuIds.Contains(mc.Id) && mc.Status != (short)Models.Setting.NormalStauts.已删除) != null
+                              HasChildren = db.Menu.FirstOrDefault(mc => mc.PId == m.Id && menuIds.Contains(mc.Id) && mc.Status != Models.Config.Status.deleted) != null,
+                              //RoleCount = 0,
+                              //OrgCount = 0,
+                              //MemberCount = 0
                           };
             return Json(new { status = "success", msg = "获取成功", content });
         }
 
         /// <summary>
-        /// 获取用户菜单树
+        /// 获取用户角色菜单树
         /// 可用于elemet ui el-tree等树形结构
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public IHttpActionResult MenuTree()
+        public IHttpActionResult MenuTreeMR()
         {
             Guid userId = Guid.Parse(HttpContext.Current.Request.Headers["sessionId"]);
             //根据用户角色查找所有的menu
@@ -88,8 +91,8 @@ namespace WebApi.Controllers.Web
                 return Json(new { status = "fail", msg = "查询为空" });
             }
             var menus = (from m in db.Menu
-                          where menuIds.Contains(m.Id) && m.Status == (short)Models.Setting.NormalStauts.正常
-                          select new MenuRes.Menu
+                          where menuIds.Contains(m.Id) && m.Status == Models.Config.Status.normal
+                         select new MenuRes.Menu
                           {
                               Id = m.Id,
                               PId = m.PId,
@@ -99,30 +102,43 @@ namespace WebApi.Controllers.Web
                               Icon = m.Icon,
                               OrderNum = m.OrderNum
                           }).ToList();
-            return Json(new { status = "success", msg = "获取成功", content = MenuTreeHelper(Guid.Parse("00000000-0000-0000-0001-000000000000"), menus).Children });
+            var menuIdArr = menus.Select(m => m.Id).ToList();
+
+            List<MenuRes.MenuTree> menuTrees = new List<MenuRes.MenuTree>();
+            foreach(var menu in menus)
+            {
+                if (!menuIdArr.Contains(menu.PId))
+                {
+                    //以分支节点，创建菜单树
+                    var menusTemp = new List<MenuRes.Menu>();
+                    menusTemp.AddRange(menus);
+                    menuTrees.Add(MenuTreeHelper(menu.Id, menusTemp));
+                }
+
+            }
+            return Json(new { status = "success", msg = "获取成功", content = menuTrees });
         }
 
         /// <summary>
-        /// 获取用户权限路由树
-        /// 可用于elemet ui（el-menu权限路由）等菜单路由
+        /// 获取用户部门菜单树
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public IHttpActionResult RouteTree()
+        public IHttpActionResult MenuTreeMO()
         {
             Guid userId = Guid.Parse(HttpContext.Current.Request.Headers["sessionId"]);
-            //根据用户角色查找所有的menu
-            var menuIds = (from mr in db.MemRole
-                           where mr.Member == userId
-                           join rm in db.RoleMenu
-                           on mr.Role equals rm.Role
-                           select rm.Menu).ToList();
-            if (menuIds.Count() == 0)
+            //根据用户部门查找所有的menu
+            var menuIds = (from mo in db.MemOrg
+                           where mo.Member == userId
+                           join om in db.OrgMenu
+                           on mo.Org equals om.Org
+                           select om.Menu).ToList();
+            if(menuIds.Count() == 0)
             {
                 return Json(new { status = "fail", msg = "查询为空" });
             }
             var menus = (from m in db.Menu
-                         where menuIds.Contains(m.Id) && m.Status == (short)Models.Setting.NormalStauts.正常 && m.Type != "BUTTON"
+                         where  m.Status == Models.Config.Status.normal && (menuIds.Contains(m.Id) || menuIds.Contains(m.PId))
                          select new MenuRes.Menu
                          {
                              Id = m.Id,
@@ -133,9 +149,119 @@ namespace WebApi.Controllers.Web
                              Icon = m.Icon,
                              OrderNum = m.OrderNum
                          }).ToList();
-            return Json(new { status = "success", msg = "获取成功", content = MenuTreeHelper(Guid.Parse("00000000-0000-0000-0001-000000000000"), menus).Children });
+            var menuIdArr = menus.Select(m => m.Id).ToList();
+
+            List<MenuRes.MenuTree> menuTrees = new List<MenuRes.MenuTree>();
+            foreach (var menu in menus)
+            {
+                if (!menuIdArr.Contains(menu.PId))
+                {
+                    //以分支节点，创建菜单树
+                    var menusTemp = new List<MenuRes.Menu>();
+                    menusTemp.AddRange(menus);
+                    menuTrees.Add(MenuTreeHelper(menu.Id, menusTemp));
+                }
+
+            }
+            return Json(new { status = "success", msg = "获取成功", content = menuTrees });
         }
 
+        /// <summary>
+        /// 获取用户角色权限路由树
+        /// 可用于elemet ui（el-menu权限路由）等菜单路由
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        public IHttpActionResult RouteTreeMR()
+        {
+            Guid userId = Guid.Parse(HttpContext.Current.Request.Headers["sessionId"]);
+            //根据用户角色查找所有的menu
+            var menuIds = (from mr in db.MemRole
+                           where mr.Member == userId
+                           join rm in db.RoleMenu
+                           on mr.Role equals rm.Role
+                           select rm.Menu).ToList();
+            if (menuIds.Count() == 0)
+            {
+                return Json(new { status = "fail", msg = "查询为空" });
+            }
+            var menus = (from m in db.Menu
+                         where menuIds.Contains(m.Id) && m.Status == Models.Config.Status.normal && m.Type != "BUTTON"
+                         select new MenuRes.Menu
+                         {
+                             Id = m.Id,
+                             PId = m.PId,
+                             Name = m.Name,
+                             Controller = m.Controller,
+                             Action = m.Action,
+                             Icon = m.Icon,
+                             OrderNum = m.OrderNum
+                         }).ToList();
+            var menuIdArr = menus.Select(m => m.Id).ToList();
+
+            List<MenuRes.MenuTree> routerTrees = new List<MenuRes.MenuTree>();
+            foreach (var menu in menus)
+            {
+                if (!menuIdArr.Contains(menu.PId))
+                {
+                    //以分支节点，创建菜单树
+                    var menusTemp = new List<MenuRes.Menu>();
+                    menusTemp.AddRange(menus);
+                    routerTrees.Add(MenuTreeHelper(menu.Id, menusTemp));
+                }
+
+            }
+            return Json(new { status = "success", msg = "获取成功", content = routerTrees });
+        }
+
+
+        /// <summary>
+        /// 获取用户部门权限路由树
+        /// 可用于elemet ui（el-menu权限路由）等菜单路由
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        public IHttpActionResult RouteTreeMO()
+        {
+            Guid userId = Guid.Parse(HttpContext.Current.Request.Headers["sessionId"]);
+            //根据用户部门查找所有的menu
+            var menuIds = (from mo in db.MemOrg
+                           where mo.Member == userId
+                           join om in db.OrgMenu
+                           on mo.Org equals om.Org
+                           select om.Menu).ToList();
+            if (menuIds.Count() == 0)
+            {
+                return Json(new { status = "fail", msg = "查询为空" });
+            }
+            var menus = (from m in db.Menu
+                         where menuIds.Contains(m.Id) && m.Status == Models.Config.Status.normal && m.Type != "BUTTON"
+                         select new MenuRes.Menu
+                         {
+                             Id = m.Id,
+                             PId = m.PId,
+                             Name = m.Name,
+                             Controller = m.Controller,
+                             Action = m.Action,
+                             Icon = m.Icon,
+                             OrderNum = m.OrderNum
+                         }).ToList();
+            var menuIdArr = menus.Select(m => m.Id).ToList();
+
+            List<MenuRes.MenuTree> routerTrees = new List<MenuRes.MenuTree>();
+            foreach (var menu in menus)
+            {
+                if (!menuIdArr.Contains(menu.PId))
+                {
+                    //以分支节点，创建菜单树
+                    var menusTemp = new List<MenuRes.Menu>();
+                    menusTemp.AddRange(menus);
+                    routerTrees.Add(MenuTreeHelper(menu.Id, menusTemp));
+                }
+
+            }
+            return Json(new { status = "success", msg = "获取成功", content = routerTrees });
+        }
         /// <summary>
         /// 递归生成菜单树结构（辅助方法）
         /// </summary>

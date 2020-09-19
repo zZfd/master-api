@@ -20,6 +20,12 @@ namespace WebApi.Models.Response.Web.Menu
         public int OrderNum { get; set; }
         public bool OpenNewPage { get; set; }
         public bool HasChildren { get; set; }
+        //总共有多少部门具有此权限
+        public int OrgCount { get; set; }
+        //总共有多少角色具有此权限
+        public int RoleCount { get; set; }
+        //总共有多少用户具有此权限
+        public int MemberCount { get; set; }
     }
 
     public class MenuTree

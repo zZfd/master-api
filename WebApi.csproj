@@ -158,19 +158,26 @@
     <Compile Include="App_Start\SwaggerConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\Mini\MemberController.cs" />
+    <Compile Include="Controllers\Web\AttachmentsController.cs" />
     <Compile Include="Controllers\Web\MenuController.cs" />
+    <Compile Include="Controllers\Web\OrgController.cs" />
+    <Compile Include="Controllers\Web\RoleController.cs" />
     <Compile Include="Filter\AuthorityFilter.cs" />
     <Compile Include="Filter\WebApiProfilingActionFilter.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\Config\Settings.cs" />
     <Compile Include="Models\Request\Mini\Member\Login.cs" />
     <Compile Include="Models\Request\Mini\Menu\Menu.cs" />
     <Compile Include="Models\Request\Setting.cs" />
+    <Compile Include="Models\Request\Web\Org\Org.cs" />
+    <Compile Include="Models\Request\Web\Role\Role.cs" />
     <Compile Include="Models\Response\Mini\Menu\MenuTree.cs" />
     <Compile Include="Models\Response\Setting.cs" />
     <Compile Include="Models\Response\Web\Menu\Menu.cs" />
-    <Compile Include="Models\Setting.cs" />
+    <Compile Include="Models\Response\Web\Org\Org.cs" />
+    <Compile Include="Models\Response\Web\Role\Role.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
