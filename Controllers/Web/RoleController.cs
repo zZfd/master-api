@@ -133,7 +133,7 @@ namespace WebApi.Controllers.Web
                         r.Org,
                         r.Status,
                         r.OrderNum,
-                        MemberCount = db.MemRole.Where(mr2 => mr2.Role == r.Id).Select(mr2 => mr.Member).Intersect(db.Member.Where(mem => mem.Status == Models.Config.Status.normal).Select(mem => mem.Id)).Count(),
+                        MemberCount = db.MemRole.Where(mr2 => mr2.Role == r.Id).Select(mr2 => mr2.Member).Intersect(db.Member.Where(mem => mem.Status == Models.Config.Status.normal).Select(mem => mem.Id)).Count(),
                         MenuCount = db.RoleMenu.Where(rm => rm.Role == r.Id).Select(om => om.Menu).Intersect(db.Menu.Where(menu => menu.Status == Models.Config.Status.normal).Select(menu => menu.Id)).Count(),
                         HasChildren = db.Role.Where(r2 => r2.PId == r.Id && r2.Status != Models.Config.Status.deleted).Any()
                     });

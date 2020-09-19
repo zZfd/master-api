@@ -30,9 +30,7 @@ namespace DataBase
         [StringLength(1000)]
         public string Action { get; set; }
 
-        [Required]
-        [StringLength(50)]
-        public string Type { get; set; }
+        public short Type { get; set; }
 
         [Required]
         [StringLength(2000)]
@@ -40,8 +38,6 @@ namespace DataBase
 
         [StringLength(500)]
         public string Icon { get; set; }
-
-        public bool OpenNewPage { get; set; }
 
         public short OrderNum { get; set; }
 

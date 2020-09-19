@@ -14,11 +14,10 @@ namespace WebApi.Models.Response.Web.Menu
 
         public string Action { get; set; }
         public string Icon { get; set; }
-        public string Type { get; set; }
+        public short Type { get; set; }
         public short Status { get; set; }
 
         public int OrderNum { get; set; }
-        public bool OpenNewPage { get; set; }
         public bool HasChildren { get; set; }
         //总共有多少部门具有此权限
         public int OrgCount { get; set; }

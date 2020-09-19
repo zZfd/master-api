@@ -36,12 +36,11 @@ namespace WebApi.App_Start
                 Name = "Manage",
                 Controller = "",
                 Action = "",
-                Type = "ROOT",
+                Type = Models.Config.MenuType.root,
                 Code = "g8J1",
                 Icon = "fa-paper-plane-o",
-                OpenNewPage = false,
                 OrderNum = 1,
-                Status = (short)Models.Setting.NormalStauts.正常,
+                Status = Models.Config.Status.normal,
             };
             db.Menu.Add(root);
         }
@@ -54,7 +53,7 @@ namespace WebApi.App_Start
                 PId = new Guid("00000000-0000-0000-0001-000000000000"),
                 Name = "好悦猪",
                 Code = "efft",
-                Status = (short)Models.Setting.NormalStauts.正常,
+                Status = Models.Config.Status.normal,
                 Icon = "",
                 OrgMenu = new List<DataBase.OrgMenu>(),
                 OrderNum = 1
@@ -71,7 +70,7 @@ namespace WebApi.App_Start
                 PId = new Guid("00000000-0000-0000-0001-000000000000"),
                 Name = "超级管理员",
                 Code = "efft",
-                Status = (short)Models.Setting.NormalStauts.正常,
+                Status = Models.Config.Status.normal,
                 Icon = "",
                 RoleMenu = new List<DataBase.RoleMenu>(),
                 Org = new Guid("00000000-0000-0000-0001-000000000000"),
@@ -94,7 +93,7 @@ namespace WebApi.App_Start
                 NickName = "超级管理员",
                 LastFailTime = DateTime.Now,
                 FailTimes = 0,
-                Status = (short)Models.Setting.NormalStauts.正常,
+                Status = Models.Config.Status.normal,
                 Avatar = "",
                 MemRole = new List<DataBase.MemRole>(),
                 MemOrg = new List<DataBase.MemOrg>()
