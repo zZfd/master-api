@@ -36,13 +36,22 @@ namespace WebApi
             //    defaults: new { controller = "swagger", action = "ui", id = "index" }
             //);
 
+            //config.Routes.MapHttpRoute(
+            //    name: "MiniApi",
+            //    routeTemplate: "api/mini/{controller}/{action}/{id}",
+            //    defaults: new
+            //    {
+            //        id = RouteParameter.Optional,
+            //        namespaces = new[] { "WebApi.Controllers.Mini" }
+            //    }
+            //    );
             config.Routes.MapHttpRoute(
-                name: "MiniApi",
-                routeTemplate: "api/mini/{controller}/{action}/{id}",
+                name: "WebApi",
+                routeTemplate: "api/web/{controller}/{action}/{id}",
                 defaults: new
                 {
                     id = RouteParameter.Optional,
-                    namespaces = new[] { "WebApi.Controllers.Mini" }
+                    namespaces = new[] { "WebApi.Controllers.Web" }
                 }
                 );
         }

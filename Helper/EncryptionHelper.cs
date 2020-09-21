@@ -9,6 +9,24 @@ namespace Helper
 {
     public static class EncryptionHelper
     {
+//        #region RSAForToken
+//        private static readonly RSACryptoService rSACryptoService = new RSACryptoService(@"MIICXQIBAAKBgQD5XBCSu0HCIz2gOEHwnKlh/bkY5DciJUFs0BHB4g5PoAZNMOV+
+//cGmAHxfDDXcqZwFl4QpaFEUwLXt/xX/IBojfDc5XL5jCm/xTGpXfX1vMTiPj5Ils
+//zZTUAQryUu2lXb+ScSZIkStFWqS9ZJEhqEBpHDv/PHn9lnocvW/1gUjeYwIDAQAB
+//AoGAMYcov4w0BnRrdBxYdIsZVZ5ImnoRvVV7BjrZnBHjV8toFQLmQlPfkJQcayCM
+//j75/15V4MeYey+/svLckpz0tCARdrBHuZ8lKf9ENqiJ9T47u60vY1mCXZC+fSSKo
+//HxmHYV7FbDDgjc/Jo0Sc84cAknWBnz9gmU0vphJmovl/hhECQQD/F18v+U4OvMPC
+//fEq8PL3VgjD7knmZ/yqyA2LiOXKzhi60nWjG/zWgnZgn0RsZAl3BY9k1Zt5yUpDa
+//bg2NocyrAkEA+j93Sdram49YXXqmtS+nePTiT6QrPit3VexYtZI9DkdBq8NdBUt+
+//qMB2b4tqK/alQ5jJok5dHWjpwSCtSJ9FKQJBAIOtZt92y8pjupGcY1/D4yJhsDNM
+//qyTJSRrXEKZCjWkKbPWjA8ElYGNmtnJnSJuiUw9PIYKldVKCOG/ou2pPCT0CQQCz
+//PZQWjTA5bcHQKtKPQlPE+jnC64ahoAZ4v7GGU/lxaa5q9aKB8WIGQtxR5tykIqSa
+//tyvtGg3ty8BqORqEwreJAkAFFrgno8ByvQGHppYV3+fYuFh5HwpCoCqiR3mZ5+zX
+//Xaf9IHT4PgYFcGq2fys/GDMdoPLVdUzXBDbtAejADinf", @"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQD5XBCSu0HCIz2gOEHwnKlh/bkY
+//5DciJUFs0BHB4g5PoAZNMOV+cGmAHxfDDXcqZwFl4QpaFEUwLXt/xX/IBojfDc5X
+//L5jCm/xTGpXfX1vMTiPj5IlszZTUAQryUu2lXb+ScSZIkStFWqS9ZJEhqEBpHDv/
+//PHn9lnocvW/1gUjeYwIDAQAB");
+//        #endregion
         /// <summary>  
         /// SHA1 加密，返回大写字符串  
         /// </summary>  

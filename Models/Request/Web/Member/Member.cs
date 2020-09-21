@@ -6,6 +6,13 @@ using System.Web;
 
 namespace WebApi.Models.Request.Web.Member
 {
+    public class Login
+    {
+        [Required(ErrorMessage ="请输入用户名")]
+        public string UserName { get; set; }
+        [Required(ErrorMessage = "请输入密码")]
+        public string Password { get; set; }
+    }
     public class Member
     {
         public Guid Id { get; set; }
