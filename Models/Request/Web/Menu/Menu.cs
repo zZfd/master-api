@@ -8,16 +8,14 @@ namespace WebApi.Models.Request.Web.Menu
 {
     public class Menu
     {
-        public Guid Id { get; set; }
+        public Guid? Id { get; set; }
         [Required(ErrorMessage = "请选择父级菜单")]
         public Guid PId { get; set; }
         [Required(ErrorMessage = "请输入菜单名称")]
 
         public string Name { get; set; }
-        [Required(ErrorMessage = "请输入控制器")]
 
         public string Controller { get; set; }
-        [Required(ErrorMessage = "请输入动作")]
 
         public string Action { get; set; }
         [Required(ErrorMessage = "请选择菜单类型")]

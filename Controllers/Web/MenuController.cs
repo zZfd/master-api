@@ -15,7 +15,8 @@ namespace WebApi.Controllers.Web
     public class MenuController : ApiController
     {
         private readonly DataBase.DB db = new DataBase.DB();
-
+        private const string TOKEN = "ZFDYES";
+        private readonly Guid SUPER = Guid.Parse("00000000-0000-0000-0001-000000000000");
         /// <summary>
         /// 添加菜单
         /// </summary>
@@ -30,9 +31,16 @@ namespace WebApi.Controllers.Web
                 if (pMenu == null)
                 {
                     //父节点非法
-                    return Json(new { status = "fail", msg = "保存失败" });
+                    return Json(new { status = "fail", msg = "父节点不存在" });
                 }
-
+                if(menu.Type == Models.Config.MenuType.root)
+                {
+                    return Json(new { status = "fail", msg = "不能添加根节点" });
+                }
+                if (menu.Status > Models.Config.Status.forbidden || menu.Status < Models.Config.Status.deleted)
+                {
+                    return Json(new { status = "fail", msg = "状态错误" });
+                }
                 DataBase.Menus menuDB = new DataBase.Menus
                 {
                     Id = Guid.NewGuid(),
@@ -46,14 +54,15 @@ namespace WebApi.Controllers.Web
                     Status = menu.Status,
                     OrderNum = menu.OrderNum,
                 };
-
                 db.Entry(menuDB).State = System.Data.Entity.EntityState.Added;
+                //向超级管理员添加该菜单
+                db.RoleMenu.Add(new DataBase.RoleMenu { Role = SUPER, Menu = menuDB.Id});
                 try
                 {
                     await db.SaveChangesAsync();
                     return Json(new { status = "success", msg = "保存成功" });
                 }
-                catch (DbUpdateException ex)
+                catch (Exception ex)
                 {
                     Helper.LogHelper.WriteErrorLog(ex);
                     return Json(new { status = "fail", msg = "保存失败" });
@@ -72,7 +81,7 @@ namespace WebApi.Controllers.Web
         /// <param name="menu"></param>
         /// <returns></returns>
         [HttpPut]
-        public async Task<IHttpActionResult> UpdateOrg(MenuReq.Menu menu)
+        public async Task<IHttpActionResult> UpdateMenu(MenuReq.Menu menu)
         {
             if (ModelState.IsValid)
             {
@@ -80,17 +89,14 @@ namespace WebApi.Controllers.Web
                 if (menuDB == null || menuDB.Id == Guid.Parse("00000000-0000-0000-0001-000000000000"))
                 {
                     //节点非法
-                    //根部门不允许修改
-                    return Json(new { status = "fail", msg = "请求参数错误" });
+                    //根菜单不允许修改
+                    return Json(new { status = "fail", msg = "根菜单不允许操作" });
                 }
-                var pMenu = await db.Menus.FindAsync(menu.PId);
-                if (pMenu == null)
+                if (menu.Status > Models.Config.Status.forbidden || menu.Status < Models.Config.Status.deleted)
                 {
-                    //父节点非法
-                    return Json(new { status = "fail", msg = "保存失败" });
+                    return Json(new { status = "fail", msg = "状态错误" });
                 }
-
-                menuDB.Id = menu.Id;
+                menuDB.Id = (Guid)menu.Id;
                 menuDB.PId = menu.PId;
                 menuDB.Name = menu.Name;
                 menuDB.Controller = menu.Controller;
@@ -107,10 +113,10 @@ namespace WebApi.Controllers.Web
                     await db.SaveChangesAsync();
                     return Json(new { status = "success", msg = "修改成功" });
                 }
-                catch (DbUpdateException ex)
+                catch (Exception ex)
                 {
                     Helper.LogHelper.WriteErrorLog(ex);
-                    return Json(new { status = "fail", msg = "修改失败" });
+                    return Json(new { status = "fail", msg = "服务器内部错误" });
                 }
 
             }
@@ -126,27 +132,40 @@ namespace WebApi.Controllers.Web
         /// <param name="menuStatus"></param>
         /// <returns></returns>
         [HttpPut]
-        public async Task<IHttpActionResult> UpdateOrgStatus(MenuReq.MenuStatus menuStatus)
+        public async Task<IHttpActionResult> UpdateMenuStatus(MenuReq.MenuStatus menuStatus)
         {
             if (ModelState.IsValid)
             {
                 DataBase.Menus menuDB = await db.Menus.FindAsync(menuStatus.Id);
                 if (menuDB == null || menuStatus.Id == Guid.Parse("00000000-0000-0000-0001-000000000000"))
                 {
-                    //根部门不许操作
-                    return Json(new { status = "fail", msg = "请求参数错误" });
+                    //根菜单不许操作
+                    return Json(new { status = "fail", msg = "根菜单不允许操作" });
+                }
+                if (menuStatus.Status > Models.Config.Status.forbidden || menuStatus.Status < Models.Config.Status.deleted)
+                {
+                    return Json(new { status = "fail", msg = "状态错误" });
                 }
                 menuDB.Status = menuStatus.Status;
+                //禁用，删除下级菜单
+                if(menuStatus.Status != Models.Config.Status.normal)
+                {
+                    foreach(var menu in db.Menus.Where(m => m.PId == menuStatus.Id && m.Status != Models.Config.Status.deleted))
+                    {
+                        menu.Status = menuStatus.Status;
+                        db.Entry(menu).State = System.Data.Entity.EntityState.Modified;
+                    }
+                }
                 db.Entry(menuDB).State = System.Data.Entity.EntityState.Modified;
                 try
                 {
                     await db.SaveChangesAsync();
                     return Json(new { status = "success", msg = "修改成功" });
                 }
-                catch (DbUpdateException ex)
+                catch (Exception ex)
                 {
                     Helper.LogHelper.WriteErrorLog(ex);
-                    return Json(new { status = "fail", msg = "修改失败" });
+                    return Json(new { status = "fail", msg = "服务器内部错误" });
                 }
             }
             else
@@ -160,9 +179,18 @@ namespace WebApi.Controllers.Web
         /// <param name="pId"></param>
         /// <returns></returns>
         [HttpGet]
-        public IHttpActionResult LazyMenu(Guid pId)
+        public async Task<IHttpActionResult> GetLazyMenu(Guid pId)
         {
-            Guid userId = Guid.Parse(HttpContext.Current.Request.Headers["sessionId"]);
+            Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
+            if (userId == Guid.Empty)
+            {
+                return Json(new { status = "fail", msg = "请求错误" });
+            }
+            var member = await db.Members.FindAsync(userId);
+            if (member == null || member.Status != Models.Config.Status.normal)
+            {
+                return Json(new { status = "fail", msg = "用户不存在或已被禁用" });
+            }
             try
             {
 
@@ -233,21 +261,30 @@ namespace WebApi.Controllers.Web
             catch (Exception ex)
             {
                 Helper.LogHelper.WriteErrorLog(ex);
-                return Json(new { status = "fail", msg = "获取失败" });
+                return Json(new { status = "fail", msg = "服务器内部错误" });
             }
 
 
         }
 
+
         /// <summary>
-        /// 获取用户角色菜单树
-        /// 可用于elemet ui el-tree等树形结构
+        /// 获取用户角色菜单
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public IHttpActionResult MenuTreeMR()
+        public async Task<IHttpActionResult> ListMenuMR()
         {
-            Guid userId = Guid.Parse(HttpContext.Current.Request.Headers["sessionId"]);
+            Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
+            if (userId == Guid.Empty)
+            {
+                return Json(new { status = "fail", msg = "请求错误" });
+            }
+            var member = await db.Members.FindAsync(userId);
+            if (member == null || member.Status != Models.Config.Status.normal)
+            {
+                return Json(new { status = "fail", msg = "用户不存在或已被禁用" });
+            }
             //根据用户角色查找所有的menu
             var menuIds = (from mr in db.MemRole
                            where mr.Member == userId
@@ -260,6 +297,54 @@ namespace WebApi.Controllers.Web
             }
             var menus = (from m in db.Menus
                          where menuIds.Contains(m.Id) && m.Status == Models.Config.Status.normal
+                         orderby m.OrderNum
+                         select new MenuRes.Menu
+                         {
+                             Id = m.Id,
+                             PId = m.PId,
+                             Name = m.Name,
+                             Controller = m.Controller,
+                             Action = m.Action,
+                             Icon = m.Icon,
+                             OrderNum = m.OrderNum
+                         }).ToList();
+            if (menus.Count() == 0)
+            {
+                return Json(new { status = "fail", msg = "查询为空" });
+            }
+            return Json(new { status = "success", msg = "获取成功", content = menus });
+        }
+        /// <summary>
+        /// 获取用户角色菜单树
+        /// 可用于elemet ui el-tree等树形结构
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        public async Task<IHttpActionResult> GetMenuTreeMR()
+        {
+            Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
+            if (userId == Guid.Empty)
+            {
+                return Json(new { status = "fail", msg = "请求错误" });
+            }
+            var member = await db.Members.FindAsync(userId);
+            if (member == null || member.Status != Models.Config.Status.normal)
+            {
+                return Json(new { status = "fail", msg = "用户不存在或已被禁用" });
+            }
+            //根据用户角色查找所有的menu
+            var menuIds = (from mr in db.MemRole
+                           where mr.Member == userId
+                           join rm in db.RoleMenu
+                           on mr.Role equals rm.Role
+                           select rm.Menu).ToList();
+            if (menuIds.Count() == 0)
+            {
+                return Json(new { status = "fail", msg = "查询为空" });
+            }
+            var menus = (from m in db.Menus
+                         where menuIds.Contains(m.Id) && m.Status == Models.Config.Status.normal
+                         orderby m.OrderNum
                          select new MenuRes.Menu
                          {
                              Id = m.Id,
@@ -292,9 +377,18 @@ namespace WebApi.Controllers.Web
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public IHttpActionResult MenuTreeMO()
+        public async Task<IHttpActionResult> GetMenuTreeMO()
         {
-            Guid userId = Guid.Parse(HttpContext.Current.Request.Headers["sessionId"]);
+            Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
+            if (userId == Guid.Empty)
+            {
+                return Json(new { status = "fail", msg = "请求错误" });
+            }
+            var member = await db.Members.FindAsync(userId);
+            if (member == null || member.Status != Models.Config.Status.normal)
+            {
+                return Json(new { status = "fail", msg = "用户不存在或已被禁用" });
+            }
             //根据用户部门查找所有的menu
             var menuIds = (from mo in db.MemOrg
                            where mo.Member == userId
@@ -340,9 +434,18 @@ namespace WebApi.Controllers.Web
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public IHttpActionResult RouteTreeMR()
+        public async Task<IHttpActionResult> GetRouterTreeMR()
         {
-            Guid userId = Guid.Parse(HttpContext.Current.Request.Headers["sessionId"]);
+            Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
+            if (userId == Guid.Empty)
+            {
+                return Json(new { status = "fail", msg = "请求错误" });
+            }
+            var member = await db.Members.FindAsync(userId);
+            if (member == null || member.Status != Models.Config.Status.normal)
+            {
+                return Json(new { status = "fail", msg = "用户不存在或已被禁用" });
+            }
             //根据用户角色查找所有的menu
             var menuIds = (from mr in db.MemRole
                            where mr.Member == userId
@@ -354,7 +457,9 @@ namespace WebApi.Controllers.Web
                 return Json(new { status = "fail", msg = "查询为空" });
             }
             var menus = (from m in db.Menus
-                         where menuIds.Contains(m.Id) && m.Status == Models.Config.Status.normal && m.Type != Models.Config.MenuType.button
+                         where menuIds.Contains(m.Id) && m.Status == Models.Config.Status.normal 
+                         && m.Type != Models.Config.MenuType.button && m.Type != Models.Config.MenuType.root
+                         orderby m.OrderNum
                          select new MenuRes.Menu
                          {
                              Id = m.Id,

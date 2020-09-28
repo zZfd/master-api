@@ -157,7 +157,7 @@
     <Compile Include="App_Start\NamespaceSelector.cs" />
     <Compile Include="App_Start\SwaggerConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
-    <Compile Include="Controllers\Mini\MemberController.cs" />
+    <Compile Include="Controllers\Web\FootballTeamController.cs" />
     <Compile Include="Controllers\Web\MemberController.cs" />
     <Compile Include="Controllers\Web\MenuController.cs" />
     <Compile Include="Controllers\Web\OrgController.cs" />
@@ -168,7 +168,6 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\Config\Settings.cs" />
-    <Compile Include="Models\Request\Mini\Member\Login.cs" />
     <Compile Include="Models\Request\Setting.cs" />
     <Compile Include="Models\Request\Web\Member\Member.cs" />
     <Compile Include="Models\Request\Web\Menu\Menu.cs" />
@@ -176,6 +175,7 @@
     <Compile Include="Models\Request\Web\Role\Role.cs" />
     <Compile Include="Models\Response\Mini\Menu\MenuTree.cs" />
     <Compile Include="Models\Response\Response.cs" />
+    <Compile Include="Models\Response\Web\Member\Member.cs" />
     <Compile Include="Models\Response\Web\Menu\Menu.cs" />
     <Compile Include="Models\Response\Web\Org\Org.cs" />
     <Compile Include="Models\Response\Web\Role\Role.cs" />
@@ -192,6 +192,8 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Controllers\Mini\" />
+    <Folder Include="Models\Request\Mini\Member\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="DataBase\DataBase.csproj">

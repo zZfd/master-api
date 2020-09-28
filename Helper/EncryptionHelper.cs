@@ -9,24 +9,26 @@ namespace Helper
 {
     public static class EncryptionHelper
     {
-//        #region RSAForToken
-//        private static readonly RSACryptoService rSACryptoService = new RSACryptoService(@"MIICXQIBAAKBgQD5XBCSu0HCIz2gOEHwnKlh/bkY5DciJUFs0BHB4g5PoAZNMOV+
-//cGmAHxfDDXcqZwFl4QpaFEUwLXt/xX/IBojfDc5XL5jCm/xTGpXfX1vMTiPj5Ils
-//zZTUAQryUu2lXb+ScSZIkStFWqS9ZJEhqEBpHDv/PHn9lnocvW/1gUjeYwIDAQAB
-//AoGAMYcov4w0BnRrdBxYdIsZVZ5ImnoRvVV7BjrZnBHjV8toFQLmQlPfkJQcayCM
-//j75/15V4MeYey+/svLckpz0tCARdrBHuZ8lKf9ENqiJ9T47u60vY1mCXZC+fSSKo
-//HxmHYV7FbDDgjc/Jo0Sc84cAknWBnz9gmU0vphJmovl/hhECQQD/F18v+U4OvMPC
-//fEq8PL3VgjD7knmZ/yqyA2LiOXKzhi60nWjG/zWgnZgn0RsZAl3BY9k1Zt5yUpDa
-//bg2NocyrAkEA+j93Sdram49YXXqmtS+nePTiT6QrPit3VexYtZI9DkdBq8NdBUt+
-//qMB2b4tqK/alQ5jJok5dHWjpwSCtSJ9FKQJBAIOtZt92y8pjupGcY1/D4yJhsDNM
-//qyTJSRrXEKZCjWkKbPWjA8ElYGNmtnJnSJuiUw9PIYKldVKCOG/ou2pPCT0CQQCz
-//PZQWjTA5bcHQKtKPQlPE+jnC64ahoAZ4v7GGU/lxaa5q9aKB8WIGQtxR5tykIqSa
-//tyvtGg3ty8BqORqEwreJAkAFFrgno8ByvQGHppYV3+fYuFh5HwpCoCqiR3mZ5+zX
-//Xaf9IHT4PgYFcGq2fys/GDMdoPLVdUzXBDbtAejADinf", @"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQD5XBCSu0HCIz2gOEHwnKlh/bkY
-//5DciJUFs0BHB4g5PoAZNMOV+cGmAHxfDDXcqZwFl4QpaFEUwLXt/xX/IBojfDc5X
-//L5jCm/xTGpXfX1vMTiPj5IlszZTUAQryUu2lXb+ScSZIkStFWqS9ZJEhqEBpHDv/
-//PHn9lnocvW/1gUjeYwIDAQAB");
-//        #endregion
+        #region RSAForToken
+        private static readonly RSACryptoService RASForToken = new RSACryptoService(
+            @"MIICXQIBAAKBgQD5XBCSu0HCIz2gOEHwnKlh/bkY5DciJUFs0BHB4g5PoAZNMOV+
+cGmAHxfDDXcqZwFl4QpaFEUwLXt/xX/IBojfDc5XL5jCm/xTGpXfX1vMTiPj5Ils
+zZTUAQryUu2lXb+ScSZIkStFWqS9ZJEhqEBpHDv/PHn9lnocvW/1gUjeYwIDAQAB
+AoGAMYcov4w0BnRrdBxYdIsZVZ5ImnoRvVV7BjrZnBHjV8toFQLmQlPfkJQcayCM
+j75/15V4MeYey+/svLckpz0tCARdrBHuZ8lKf9ENqiJ9T47u60vY1mCXZC+fSSKo
+HxmHYV7FbDDgjc/Jo0Sc84cAknWBnz9gmU0vphJmovl/hhECQQD/F18v+U4OvMPC
+fEq8PL3VgjD7knmZ/yqyA2LiOXKzhi60nWjG/zWgnZgn0RsZAl3BY9k1Zt5yUpDa
+bg2NocyrAkEA+j93Sdram49YXXqmtS+nePTiT6QrPit3VexYtZI9DkdBq8NdBUt+
+qMB2b4tqK/alQ5jJok5dHWjpwSCtSJ9FKQJBAIOtZt92y8pjupGcY1/D4yJhsDNM
+qyTJSRrXEKZCjWkKbPWjA8ElYGNmtnJnSJuiUw9PIYKldVKCOG/ou2pPCT0CQQCz
+PZQWjTA5bcHQKtKPQlPE+jnC64ahoAZ4v7GGU/lxaa5q9aKB8WIGQtxR5tykIqSa
+tyvtGg3ty8BqORqEwreJAkAFFrgno8ByvQGHppYV3+fYuFh5HwpCoCqiR3mZ5+zX
+Xaf9IHT4PgYFcGq2fys/GDMdoPLVdUzXBDbtAejADinf",
+            @"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQD5XBCSu0HCIz2gOEHwnKlh/bkY
+5DciJUFs0BHB4g5PoAZNMOV+cGmAHxfDDXcqZwFl4QpaFEUwLXt/xX/IBojfDc5X
+L5jCm/xTGpXfX1vMTiPj5IlszZTUAQryUu2lXb+ScSZIkStFWqS9ZJEhqEBpHDv/
+PHn9lnocvW/1gUjeYwIDAQAB");
+        #endregion
         /// <summary>  
         /// SHA1 加密，返回大写字符串  
         /// </summary>  
@@ -71,7 +73,7 @@ namespace Helper
         /// 尾 13 4 + 9三部分组成
         /// 包括 nowTicks expires (userId,passwordSalt)加密字符串
         /// nowTicks 13位精确到毫秒
-        /// expires 7位精确到毫秒
+        /// expires 7位精确到毫秒 19分58秒
         /// 
         /// </summary>
         /// <param name="userId"></param>
@@ -80,7 +82,7 @@ namespace Helper
         /// <returns></returns>
         public static string CreateToken(Guid userId, string passwordSalt, int expires = 1958000)
         {
-            string body = SHA1(userId.ToString("N") + passwordSalt, Encoding.UTF8, true);
+            string body = RASForToken.Encrypt(userId.ToString("N") +  passwordSalt);
             long origin = new DateTime(1970, 1, 1).Ticks;
             //13位时间戳 与js时间戳保持一致，精确到毫秒
             string now = ((DateTime.Now.ToUniversalTime().Ticks - origin) / 10000).ToString();
@@ -103,21 +105,48 @@ namespace Helper
             try
             {
                 string body = token.Substring(7, token.Length - 20);
-                if (!body.Equals(SHA1(userId.ToString("N") + passwordSalt, Encoding.UTF8, true)))
+                string decrypted = RASForToken.Decrypt(body);
+                if(decrypted.Substring(0,32).Equals(userId.ToString("N")) && decrypted.Substring(32).Equals(passwordSalt)){
+                    //校验token信息是否准确
+                    long origin = new DateTime(1970, 1, 1).Ticks;
+                    long time = long.Parse(token.Substring(0, 4) + token.Substring(token.Length - 9));
+                    long expires = long.Parse(token.Substring(token.Length - 13, 4) + token.Substring(4, 3));
+                    int min = (int)expires / 1000 / 100;//1958000
+                    int seconds = (int)expires / 1000 % 100;
+                    //校验是否过期
+                    return new DateTime(origin + (time + min * 60 * 1000 + seconds * 1000) * 10000).ToLocalTime() > DateTime.Now;
+                }
+                else
                 {
                     return false;
                 }
-                long origin = new DateTime(1970, 1, 1).Ticks;
-                long time = long.Parse(token.Substring(0, 4) + token.Substring(token.Length - 9));
-                long expires = long.Parse(token.Substring(token.Length - 13, 4) + token.Substring(4, 3));
-                int min = (int)expires / 1000 / 100;//1958000
-                int seconds = (int)expires / 1000 % 100;
-                return new DateTime(origin + (time + min * 60 * 1000 + seconds * 1000) * 10000).ToLocalTime() > DateTime.Now;
+                
             }
             catch (Exception ex)
             {
                 LogHelper.WriteErrorLog(ex);
                 return false;
+            }
+        }
+
+        /// <summary>
+        /// 从token中解析得到userId
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public static Guid GetUserId(string token)
+        {
+            try
+            {
+                string body = token.Substring(7, token.Length - 20);
+                string decrypted = RASForToken.Decrypt(body);
+                return Guid.Parse(decrypted.Substring(0, 32));
+
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteErrorLog(ex);
+                return Guid.Empty;
             }
         }
     }

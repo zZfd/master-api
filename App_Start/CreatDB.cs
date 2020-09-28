@@ -32,7 +32,7 @@ namespace WebApi.App_Start
             DataBase.Menus root = new DataBase.Menus
             {
                 Id = Guid.Parse("00000000-0000-0000-0001-000000000000"),
-                PId = Guid.Parse("00000000-0000-0000-0001-000000000000"),
+                PId = Guid.Parse("00000000-0000-0000-0000-000000000000"),
                 Name = "Manage",
                 Controller = "",
                 Action = "",
@@ -50,7 +50,7 @@ namespace WebApi.App_Start
             DataBase.Orgs org = new DataBase.Orgs
             {
                 Id = new Guid("00000000-0000-0000-0001-000000000000"),
-                PId = new Guid("00000000-0000-0000-0001-000000000000"),
+                PId = new Guid("00000000-0000-0000-0000-000000000000"),
                 Name = "好悦猪",
                 Code = "efft",
                 Status = Models.Config.Status.normal,
@@ -67,7 +67,7 @@ namespace WebApi.App_Start
             DataBase.Roles manage = new DataBase.Roles
             {
                 Id = new Guid("00000000-0000-0000-0001-000000000000"),
-                PId = new Guid("00000000-0000-0000-0001-000000000000"),
+                PId = new Guid("00000000-0000-0000-0000-000000000000"),
                 Name = "超级管理员",
                 Code = "efft",
                 Status = Models.Config.Status.normal,

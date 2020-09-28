@@ -31,7 +31,6 @@ namespace DataBase
 
         public short Type { get; set; }
 
-        [Required]
         [StringLength(2000)]
         public string Code { get; set; }
 

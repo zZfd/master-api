@@ -15,7 +15,7 @@ namespace WebApi.Controllers.Web
     public class OrgController : ApiController
     {
         private readonly DataBase.DB db = new DataBase.DB();
-
+        private const string TOKEN = "ZFDYES";
         /// <summary>
         /// 获取部门树列表
         /// </summary>
@@ -27,7 +27,7 @@ namespace WebApi.Controllers.Web
             try
             {
                 var orgIds = db.MemOrg.Where(mo => mo.Member == userId).Select(mo => mo.Org).ToList();
-                var orgs = db.Orgs.Where(o => o.Status == Models.Config.Status.normal && (orgIds.Contains(o.Id) || orgIds.Contains(o.PId))).OrderBy(o=>o.OrderNum).Select(o => new OrgRes.Org
+                var orgs = db.Orgs.Where(o => o.Status == Models.Config.Status.normal && (orgIds.Contains(o.Id) || orgIds.Contains(o.PId))).OrderBy(o => o.OrderNum).Select(o => new OrgRes.Org
                 {
                     Id = o.Id,
                     PId = o.PId,
@@ -35,7 +35,7 @@ namespace WebApi.Controllers.Web
                     OrderNum = o.OrderNum,
                 });
                 List<OrgRes.OrgTree> orgTrees = new List<OrgRes.OrgTree>();
-                foreach(Guid org in orgIds)
+                foreach (Guid org in orgIds)
                 {
                     var orgsTemp = new List<OrgRes.Org>();
                     orgsTemp.AddRange(orgs);
@@ -43,7 +43,7 @@ namespace WebApi.Controllers.Web
                 }
                 return Json(new { status = "success", msg = "获取成功", content = orgTrees });
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Helper.LogHelper.WriteErrorLog(ex);
                 return Json(new { status = "fail", msg = "获取失败" });
@@ -70,7 +70,7 @@ namespace WebApi.Controllers.Web
             {
                 Id = org.Id,
                 Name = org.Name,
-                
+
             };
             if (children.Any())
             {
@@ -90,61 +90,69 @@ namespace WebApi.Controllers.Web
         /// <param name="pId"></param>
         /// <returns></returns>
         [HttpGet]
-        public IHttpActionResult GetLazyOrg(Guid pId)
+        public async Task<IHttpActionResult> GetLazyOrg(Guid pId)
         {
-            Guid userId = Guid.Parse(HttpContext.Current.Request.Headers["sessionId"]);
+            Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
+            if (userId == Guid.Empty)
+            {
+                return Json(new { status = "fail", msg = "请求错误" });
+            }
+            var member = await db.Members.FindAsync(userId);
+            if (member == null || member.Status != Models.Config.Status.normal)
+            {
+                return Json(new { status = "fail", msg = "用户不存在或已被禁用" });
+            }
             try
             {
-
-          
-            if (pId == Guid.Empty)
-            {
-                //第一次加载
-                var orgs = db.MemOrg.Where(mo => mo.Member == userId).Join(db.Orgs.Where(o => o.Status != Models.Config.Status.deleted).OrderBy(o=>o.OrderNum), mo => mo.Org, o => o.Id, (mo, o) => new
+                if (pId == Guid.Empty)
                 {
-                    o.Id,
-                    o.PId,
-                    o.Name,
-                    o.Icon,
-                    o.Code,
-                    o.Status,
-                    o.OrderNum,
-                    MemberCount = db.MemOrg.Where(mo2 => mo2.Org == o.Id).Select(mo2=>mo2.Member).Intersect(db.Members.Where(mem=>mem.Status == Models.Config.Status.normal).Select(mem=>mem.Id)).Count(),
-                    MenuCount = db.OrgMenu.Where(om => om.Org == o.Id).Select(om => om.Menu).Intersect(db.Menus.Where(menu => menu.Status == Models.Config.Status.normal).Select(menu => menu.Id)).Count(),
-                    RoleCount = db.Roles.Where(role=>role.Org == o.Id && role.Status == Models.Config.Status.normal).Count(),
-                    HasChildren = db.Orgs.Where(org=>org.PId == o.Id && org.Status != Models.Config.Status.deleted).Any()
-                });
-                return Json(new { status = "success", msg = "获取成功", content = orgs });
-            }
-            else
-            {
+                    //第一次加载
+                    var orgs = db.MemOrg.Where(mo => mo.Member == userId).Join(db.Orgs.Where(o => o.Status != Models.Config.Status.deleted).OrderBy(o => o.OrderNum), mo => mo.Org, o => o.Id, (mo, o) => new
+                    {
+                        o.Id,
+                        o.PId,
+                        o.Name,
+                        o.Icon,
+                        o.Code,
+                        o.Status,
+                        o.OrderNum,
+                        MemberCount = db.MemOrg.Where(mo2 => mo2.Org == o.Id).Select(mo2 => mo2.Member).Intersect(db.Members.Where(mem => mem.Status == Models.Config.Status.normal).Select(mem => mem.Id)).Count(),
+                        MenuCount = db.OrgMenu.Where(om => om.Org == o.Id).Select(om => om.Menu).Intersect(db.Menus.Where(menu => menu.Status == Models.Config.Status.normal).Select(menu => menu.Id)).Count(),
+                        RoleCount = db.Roles.Where(role => role.Org == o.Id && role.Status == Models.Config.Status.normal).Count(),
+                        HasChildren = db.Orgs.Where(org => org.PId == o.Id && org.Status != Models.Config.Status.deleted).Any()
+                    });
+                    return Json(new { status = "success", msg = "获取成功", content = orgs });
+                }
+                else
+                {
                     var powerOrg = db.MemOrg.Where(mo => mo.Member == userId).Select(mo => mo.Org);
                     var powerOrgs = powerOrg.Concat(db.Orgs.Where(o => powerOrg.Contains(o.PId) && o.Status != Models.Config.Status.deleted).Select(o => o.Id));
                     if (!powerOrgs.Contains(pId))
                     {
-                        return Json(new { status = "fail", msg = "获取失败" });
+                        return Json(new { status = "fail", msg = "所选部门不存在或无权限" });
                     }
-                  var orgs = db.Orgs.Where(o => o.Id == pId && o.Status != Models.Config.Status.deleted).Select( o => new
-                {
-                    o.Id,
-                    o.PId,
-                    o.Name,
-                    o.Icon,
-                    o.Code,
-                    o.Status,
-                    o.OrderNum,
-                    //只统计正常的
-                    MemberCount = db.MemOrg.Where(mo2 => mo2.Org == o.Id).Select(mo2 => mo2.Member).Intersect(db.Members.Where(mem => mem.Status == Models.Config.Status.normal).Select(mem => mem.Id)).Count(),
-                    MenuCount = db.OrgMenu.Where(om => om.Org == o.Id).Select(om => om.Menu).Intersect(db.Menus.Where(menu => menu.Status == Models.Config.Status.normal).Select(menu => menu.Id)).Count(),
-                    RoleCount = db.Roles.Where(role => role.Org == o.Id && role.Status == Models.Config.Status.normal).Count(),
-                    HasChildren = db.Orgs.Where(org => org.PId == o.Id && org.Status != Models.Config.Status.deleted).Any()
-                });
-                return Json(new { status = "success", msg = "获取成功", content = orgs });
+                    var orgs = db.Orgs.Where(o => o.Id == pId && o.Status != Models.Config.Status.deleted).Select(o => new
+                    {
+                        o.Id,
+                        o.PId,
+                        o.Name,
+                        o.Icon,
+                        o.Code,
+                        o.Status,
+                        o.OrderNum,
+                        //只统计正常的
+                        MemberCount = db.MemOrg.Where(mo2 => mo2.Org == o.Id).Select(mo2 => mo2.Member).Intersect(db.Members.Where(mem => mem.Status == Models.Config.Status.normal).Select(mem => mem.Id)).Count(),
+                        MenuCount = db.OrgMenu.Where(om => om.Org == o.Id).Select(om => om.Menu).Intersect(db.Menus.Where(menu => menu.Status == Models.Config.Status.normal).Select(menu => menu.Id)).Count(),
+                        RoleCount = db.Roles.Where(role => role.Org == o.Id && role.Status == Models.Config.Status.normal).Count(),
+                        HasChildren = db.Orgs.Where(org => org.PId == o.Id && org.Status != Models.Config.Status.deleted).Any()
+                    });
+                    return Json(new { status = "success", msg = "获取成功", content = orgs });
+                }
             }
-            }catch(Exception ex)
+            catch (Exception ex)
             {
                 Helper.LogHelper.WriteErrorLog(ex);
-                return Json(new { status = "fail", msg = "获取失败"});
+                return Json(new { status = "fail", msg = "服务器内部错误" });
             }
         }
 
@@ -180,7 +188,7 @@ namespace WebApi.Controllers.Web
                     OrderNum = org.OrderNum,
                     OrgMenu = new List<DataBase.OrgMenu>()
                 };
-                foreach(Guid menu in org.Menus)
+                foreach (Guid menu in org.Menus)
                 {
                     orgDB.OrgMenu.Add(new DataBase.OrgMenu { Org = orgDB.Id, Menu = menu });
                 }

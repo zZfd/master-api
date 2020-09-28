@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Web;
 
 namespace WebApi.Models.Response
@@ -15,7 +16,6 @@ namespace WebApi.Models.Response
             msg = _msg;
             content = _content;
         }
-
 
     }
     public class FailResponse
