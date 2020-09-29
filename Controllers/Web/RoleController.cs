@@ -74,37 +74,7 @@ namespace WebApi.Controllers.Web
         }
 
 
-        /// <summary>
-        /// 递归生成组织树结构（辅助方法）
-        /// </summary>
-        /// <param name="pId"></param>
-        /// <param name="roles"></param>
-        /// <returns></returns>
-        private RoleRes.RoleTree RoleTreeHelper(Guid pId, List<RoleRes.Role> roles)
-        {
-            if (roles == null || roles.Count() == 0)
-            {
-                return null;
-            }
-            var role = roles.Where(m => m.Id == pId).First();
-            var children = roles.Where(o => o.PId == pId).OrderBy(o => o.OrderNum).ToList();
-            roles.Remove(role);
-            var child = new RoleRes.RoleTree
-            {
-                Id = role.Id,
-                Name = role.Name,
-
-            };
-            if (children.Any())
-            {
-                child.Children = new List<RoleRes.RoleTree>();
-                foreach (var item in children)
-                {
-                    child.Children.Add(RoleTreeHelper(item.Id, roles));
-                }
-            }
-            return child;
-        }
+       
 
        /// <summary>
        /// 懒加载角色树，单次加载一个部门角色树
@@ -113,24 +83,24 @@ namespace WebApi.Controllers.Web
        /// <param name="org"></param>
        /// <returns></returns>
         [HttpGet]
-        public IHttpActionResult GetLazyRole(Guid pId,Guid org)
+        public IHttpActionResult GetLazyRole(Guid org, Guid pId)
         {
             Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
-           
-            var orgs = db.MemOrg.Where(mo => mo.Member == userId && mo.Orgs.Status == Models.Config.Status.normal).Select(mo=>mo.Org).ToList();
-            if(orgs.Count() == 0)
+
+            List<Guid> powerOrgs = Factory.OrgFactory.GetPowerOrgs(userId, Models.Config.Status.normal,db);
+            if (powerOrgs.Count() == 0)
             {
                 return Json(new { status = "fail", msg = "暂无部门角色" });
             }
-            if (org != Guid.Empty && !orgs.Contains(org) )
+            if (org != Guid.Empty && !powerOrgs.Contains(org) )
             {
                 return Json(new { status = "fail", msg = "用户不属于该部门" });
             }
             try
             {
-                if (pId == Guid.Empty && org == Guid.Empty)
+                if (pId == Guid.Empty)
                 {
-                    Guid firstOrg = orgs[0];
+                    Guid firstOrg = org == Guid.Empty ? powerOrgs[0]:org;
                     //第一次加载
                     var roles = db.MemRole.Where(mr => mr.Member == userId && mr.Roles.Org == firstOrg && mr.Roles.Status != Models.Config.Status.deleted ).OrderBy(mr => mr.Roles.OrderNum).Select(mr=>
                       new
@@ -152,9 +122,8 @@ namespace WebApi.Controllers.Web
                 }
                 else
                 {
-                    var orgIds = db.MemOrg.Where(mo => mo.Member == userId && mo.Orgs.Status != Models.Config.Status.deleted).Select(mo => mo.Org).ToList();
 
-                    var powerRoles = db.Roles.Where(r => orgIds.Contains(r.Org) && r.Status != Models.Config.Status.deleted).Select(r => r.Id);
+                    var powerRoles = db.Roles.Where(r => powerOrgs.Contains(r.Org) && r.Status != Models.Config.Status.deleted).Select(r => r.Id);
                     if (!powerRoles.Contains(pId))
                     {
                         //节点非法
@@ -214,13 +183,18 @@ namespace WebApi.Controllers.Web
                     //菜单非法
                     return Json(new { status = "fail", msg = "菜单非法" });
                 }
-                var orgIds = db.MemOrg.Where(mo => mo.Member == userId && mo.Orgs.Status == Models.Config.Status.normal).Select(mo => mo.Org).ToList();
-                if (!orgIds.Contains(role.Org))
+                List<Guid> powerOrgs = Factory.OrgFactory.GetPowerOrgs(userId, Models.Config.Status.normal, db);
+                
+                if (powerOrgs.Count() == 0)
+                {
+                    return Json(new { status = "fail", msg = "暂无部门角色" });
+                }
+                if (!powerOrgs.Contains(role.Org))
                 {
                     //部门非法
                     return Json(new { status = "fail", msg = "部门非法" });
                 }
-                var roles = db.Roles.Where(r => orgIds.Contains(r.Org) && r.Status == Models.Config.Status.normal).Select(r=>r.Id);
+                var roles = db.Roles.Where(r => powerOrgs.Contains(r.Org) && r.Status == Models.Config.Status.normal).Select(r=>r.Id);
                 if (!roles.Contains(role.PId))
                 {
                     //节点非法
@@ -292,13 +266,19 @@ namespace WebApi.Controllers.Web
                     //菜单非法
                     return Json(new { status = "fail", msg = "菜单非法" });
                 }
-                var orgIds = db.MemOrg.Where(mo => mo.Member == userId && mo.Orgs.Status == Models.Config.Status.normal).Select(mo => mo.Org).ToList();
-                if (!orgIds.Contains(role.Org))
+                List<Guid> powerOrgs = Factory.OrgFactory.GetPowerOrgs(userId, Models.Config.Status.normal, db);
+
+                if (powerOrgs.Count() == 0)
+                {
+                    return Json(new { status = "fail", msg = "暂无部门角色" });
+                }
+              
+                if (!powerOrgs.Contains(role.Org))
                 {
                     //部门非法
                     return Json(new { status = "fail", msg = "部门非法" });
                 }
-                var roles = db.Roles.Where(r => orgIds.Contains(r.Org) && r.Status == Models.Config.Status.normal).Select(r => r.Id);
+                var roles = db.Roles.Where(r => powerOrgs.Contains(r.Org) && r.Status == Models.Config.Status.normal).Select(r => r.Id);
                 if (!roles.Contains(role.PId) || !roles.Contains((Guid)role.Id) || role.Id == Guid.Parse("00000000-0000-0000-0001-000000000000"))
                 {
                     //节点非法
@@ -359,9 +339,14 @@ namespace WebApi.Controllers.Web
 
                 DataBase.Roles roleDB = await db.Roles.FindAsync(roleStatus.Id);
 
-                var orgIds = db.MemOrg.Where(mo => mo.Member == userId && mo.Orgs.Status == Models.Config.Status.normal).Select(mo => mo.Org).ToList();
-                
-                var roles = db.Roles.Where(r => orgIds.Contains(r.Org) && r.Status != Models.Config.Status.deleted).Select(r => r.Id);
+                List<Guid> powerOrgs = Factory.OrgFactory.GetPowerOrgs(userId, Models.Config.Status.normal, db);
+
+                if (powerOrgs.Count() == 0)
+                {
+                    return Json(new { status = "fail", msg = "暂无部门角色" });
+                }
+
+                var roles = db.Roles.Where(r => powerOrgs.Contains(r.Org) && r.Status != Models.Config.Status.deleted).Select(r => r.Id);
                 if (!roles.Contains(roleStatus.Id))
                 {
                     //节点非法
@@ -395,5 +380,37 @@ namespace WebApi.Controllers.Web
                 return Json(new { status = "fail", msg = "请求参数错误" });
             }
         }
+        /// <summary>
+        /// 递归生成组织树结构（辅助方法）
+        /// </summary>
+        /// <param name="pId"></param>
+        /// <param name="roles"></param>
+        /// <returns></returns>
+        private RoleRes.RoleTree RoleTreeHelper(Guid pId, List<RoleRes.Role> roles)
+        {
+            if (roles == null || roles.Count() == 0)
+            {
+                return null;
+            }
+            var role = roles.Where(m => m.Id == pId).First();
+            var children = roles.Where(o => o.PId == pId).OrderBy(o => o.OrderNum).ToList();
+            roles.Remove(role);
+            var child = new RoleRes.RoleTree
+            {
+                Id = role.Id,
+                Name = role.Name,
+
+            };
+            if (children.Any())
+            {
+                child.Children = new List<RoleRes.RoleTree>();
+                foreach (var item in children)
+                {
+                    child.Children.Add(RoleTreeHelper(item.Id, roles));
+                }
+            }
+            return child;
+        }
+       
     }
 }

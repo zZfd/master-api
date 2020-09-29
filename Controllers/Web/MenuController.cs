@@ -540,10 +540,11 @@ namespace WebApi.Controllers.Web
                 Controller = menu.Controller,
                 Action = menu.Action,
                 Icon = menu.Icon,
-                Children = new List<MenuRes.MenuTree>()
+                
             };
             if (children.Any())
             {
+                child.Children = new List<MenuRes.MenuTree>();
                 foreach (var item in children)
                 {
                     child.Children.Add(MenuTreeHelper(item.Id, menus));

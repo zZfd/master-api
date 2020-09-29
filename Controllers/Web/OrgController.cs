@@ -101,9 +101,8 @@ namespace WebApi.Controllers.Web
                 }
                 else
                 {
-                    var powerOrg = db.MemOrg.Where(mo => mo.Member == userId).Select(mo => new OrgRes.Org { Id = mo.Org, PId = mo.Orgs.PId }).ToList();
-                    List<Guid> powerOrgs = new List<Guid>();
-                    PowerOrgsHelper(powerOrg, powerOrgs, Models.Config.Status.deleted);
+                    List<Guid> powerOrgs = Factory.OrgFactory.GetPowerOrgs(userId, Models.Config.Status.deleted, db);
+
                     if (!powerOrgs.Contains(pId))
                     {
                         return Json(new { status = "fail", msg = "所选部门不存在或无权限" });
@@ -144,10 +143,7 @@ namespace WebApi.Controllers.Web
             if (ModelState.IsValid)
             {
                 Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
-
-                var powerOrg = db.MemOrg.Where(mo => mo.Member == userId).Select(mo => new OrgRes.Org { Id = mo.Org,PId = mo.Orgs.PId}).ToList();
-                List<Guid> powerOrgs = new List<Guid>();
-                PowerOrgsHelper(powerOrg, powerOrgs, Models.Config.Status.normal);
+                List<Guid> powerOrgs = Factory.OrgFactory.GetPowerOrgs(userId, Models.Config.Status.normal, db);
 
                 if (!powerOrgs.Contains(org.PId))
                 {
@@ -206,10 +202,8 @@ namespace WebApi.Controllers.Web
             if (ModelState.IsValid)
             {
                 Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
+                List<Guid> powerOrgs = Factory.OrgFactory.GetPowerOrgs(userId, Models.Config.Status.normal, db);
 
-                var powerOrg = db.MemOrg.Where(mo => mo.Member == userId).Select(mo => new OrgRes.Org { Id = mo.Org, PId = mo.Orgs.PId }).ToList();
-                List<Guid> powerOrgs = new List<Guid>();
-                PowerOrgsHelper(powerOrg, powerOrgs, Models.Config.Status.normal);
                 if (!powerOrgs.Contains(org.PId) || !powerOrgs.Contains((Guid)org.Id) || org.Id == Guid.Parse("00000000-0000-0000-0001-000000000000"))
                 {
                     return Json(new { status = "fail", msg = "所选部门不存在或无权限" });
@@ -268,9 +262,7 @@ namespace WebApi.Controllers.Web
                 }
                 Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
 
-                var powerOrg = db.MemOrg.Where(mo => mo.Member == userId).Select(mo => new OrgRes.Org { Id = mo.Org, PId = mo.Orgs.PId }).ToList();
-                List<Guid> powerOrgs = new List<Guid>();
-                PowerOrgsHelper(powerOrg, powerOrgs, Models.Config.Status.deleted);
+                List<Guid> powerOrgs = Factory.OrgFactory.GetPowerOrgs(userId, Models.Config.Status.deleted, db);
 
                 if (!powerOrgs.Contains(orgStatus.Id) || orgStatus.Id == Guid.Parse("00000000-0000-0000-0001-000000000000"))
                 {
@@ -325,10 +317,10 @@ namespace WebApi.Controllers.Web
             {
                 Id = org.Id,
                 Name = org.Name,
-                Children = new List<OrgRes.OrgTree>()
             };
             if (children.Any())
             {
+                child.Children = new List<OrgRes.OrgTree>();
                 foreach (var item in children)
                 {
                     child.Children.Add(OrgTreeHelper(item.Id, orgs));
@@ -337,41 +329,6 @@ namespace WebApi.Controllers.Web
             return child;
         }
 
-        /// <summary>
-        /// 递归向下查找权限部门
-        /// </summary>
-        /// <param name="source"></param>
-        /// <param name="result"></param>
-        /// <param name="status"></param>
-        private void PowerOrgsHelper(List<OrgRes.Org> source, List<Guid> result, short status)
-        {
-            result.AddRange(source.Select(s => s.Id));
-            if (status == Models.Config.Status.normal)
-            {
-                //只包含正常
-                foreach (var org in source)
-                {
-                    var s = db.Orgs.Where(o => o.PId == org.Id && o.Status == status).Select(o => new OrgRes.Org
-                    {
-                        Id = o.Id,
-                        PId = o.PId
-                    }).ToList();
-                    PowerOrgsHelper(s, result, status);
-                }
-            }
-            else
-            {
-                //不包含已删除
-                foreach (var org in source)
-                {
-                    var s = db.Orgs.Where(o => o.PId == org.Id && o.Status != Models.Config.Status.deleted).Select(o => new OrgRes.Org
-                    {
-                        Id = o.Id,
-                        PId = o.PId
-                    }).ToList();
-                    PowerOrgsHelper(s, result, status);
-                }
-            }
-        }
+       
     }
 }

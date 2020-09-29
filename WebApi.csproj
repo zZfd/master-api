@@ -162,6 +162,7 @@
     <Compile Include="Controllers\Web\MenuController.cs" />
     <Compile Include="Controllers\Web\OrgController.cs" />
     <Compile Include="Controllers\Web\RoleController.cs" />
+    <Compile Include="Factory\OrgFactory.cs" />
     <Compile Include="Filter\AuthorityFilter.cs" />
     <Compile Include="Filter\WebApiProfilingActionFilter.cs" />
     <Compile Include="Global.asax.cs">
@@ -199,10 +200,6 @@
     <ProjectReference Include="DataBase\DataBase.csproj">
       <Project>{f85e4199-96ce-4eaf-979e-8f0a80c0ad87}</Project>
       <Name>DataBase</Name>
-    </ProjectReference>
-    <ProjectReference Include="Factory\Factory.csproj">
-      <Project>{722ba3c1-0dd0-41d5-9bf0-91c501c5eb96}</Project>
-      <Name>Factory</Name>
     </ProjectReference>
     <ProjectReference Include="Helper\Helper.csproj">
       <Project>{bb052917-8fe3-4a5b-94bd-405f34b75057}</Project>
