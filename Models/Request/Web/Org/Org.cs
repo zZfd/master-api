@@ -13,6 +13,9 @@ namespace WebApi.Models.Request.Web.Org
         public Guid PId { get; set; }
         [Required(ErrorMessage = "请输入部门名称")]
         public string Name { get; set; }
+
+       
+
         [Required(ErrorMessage = "请选择部门状态")]
         public short Status { get; set; }
         [Required(ErrorMessage = "请进行排序")]

@@ -8,7 +8,7 @@ namespace WebApi.Models.Request.Web.Role
 {
     public class Role
     {
-        public Guid Id { get; set; }
+        public Guid? Id { get; set; }
         [Required(ErrorMessage = "请选择父级角色")]
         public Guid PId { get; set; }
         [Required(ErrorMessage = "请输入角色名称")]

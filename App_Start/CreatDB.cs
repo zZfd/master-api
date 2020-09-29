@@ -84,7 +84,7 @@ namespace WebApi.App_Start
         {
             DataBase.Members manage = new DataBase.Members
             {
-                Id = new Guid("00000000-0000-0001-0000-000000000000"),
+                Id = new Guid("00000000-0000-0000-0001-000000000000"),
                 Name = "admin",
                 Phone = 15988800323,
                 Password = "E612E72F933348A3B96858CC9F5C1D0A29E92B75",

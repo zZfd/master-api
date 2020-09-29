@@ -42,6 +42,7 @@ namespace WebApi.Filter
                 {
                     throw new Exception("token解析userId错误");
                 }
+
                 using (DataBase.DB db = new DataBase.DB())
                 {
                     var user = db.Members.Find(userId);

@@ -15,14 +15,36 @@ namespace WebApi.Controllers.Web
     public class RoleController : ApiController
     {
         private readonly DataBase.DB db = new DataBase.DB();
+        private const string TOKEN = "ZFDYES";
+        private readonly Guid SUPERMember = Guid.Parse("00000000-0000-0001-0000-000000000000");
 
+        [HttpGet]
+        public IHttpActionResult ListRoles()
+        {
+            Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
+            var roles = db.MemRole.Where(mr => mr.Member == userId && mr.Roles.Status != Models.Config.Status.deleted).OrderBy(mr => mr.Roles.Org).Select(mr => new
+            {
+                mr.Roles.Id,
+                mr.Roles.PId,
+                mr.Roles.Name,
+                mr.Roles.Icon,
+                mr.Roles.Code,
+                mr.Roles.Org,
+                OrgName = db.Orgs.FirstOrDefault(o => o.Id == mr.Roles.Org).Name,
+                mr.Roles.Status,
+                mr.Roles.OrderNum,
+                Menus = db.RoleMenu.Where(rm => rm.Role == mr.Roles.Id && rm.Menus.Status == Models.Config.Status.normal).Select(rm => rm.Menu),
+                MemberCount = db.MemRole.Where(mr2 => mr2.Role == mr.Roles.Id && mr2.Members.Status == Models.Config.Status.normal).Count(),
+            });
+            return Json(new { status = "success", msg = "获取成功", content = roles });
+        }
 
         /// <summary>
         /// 获取角色树列表
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public IHttpActionResult GetOrgTree()
+        public IHttpActionResult GetRoleTree()
         {
             Guid userId = Guid.Parse(HttpContext.Current.Request.Headers["sessionId"]);
             try
@@ -84,57 +106,73 @@ namespace WebApi.Controllers.Web
             return child;
         }
 
-        /// <summary>
-        /// 懒加载角色树
-        /// </summary>
-        /// <param name="pId"></param>
-        /// <returns></returns>
+       /// <summary>
+       /// 懒加载角色树，单次加载一个部门角色树
+       /// </summary>
+       /// <param name="pId"></param>
+       /// <param name="org"></param>
+       /// <returns></returns>
         [HttpGet]
-        public IHttpActionResult GetLazyRole(Guid pId)
+        public IHttpActionResult GetLazyRole(Guid pId,Guid org)
         {
-            Guid userId = Guid.Parse(HttpContext.Current.Request.Headers["sessionId"]);
+            Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
+           
+            var orgs = db.MemOrg.Where(mo => mo.Member == userId && mo.Orgs.Status == Models.Config.Status.normal).Select(mo=>mo.Org).ToList();
+            if(orgs.Count() == 0)
+            {
+                return Json(new { status = "fail", msg = "暂无部门角色" });
+            }
+            if (org != Guid.Empty && !orgs.Contains(org) )
+            {
+                return Json(new { status = "fail", msg = "用户不属于该部门" });
+            }
             try
             {
-                if (pId == Guid.Empty)
+                if (pId == Guid.Empty && org == Guid.Empty)
                 {
+                    Guid firstOrg = orgs[0];
                     //第一次加载
-                    var roles = db.MemRole.Where(mr => mr.Member == userId).Join(db.Roles.Where(r => r.Status != Models.Config.Status.deleted).OrderBy(r => r.OrderNum), mr => mr.Role, r => r.Id, (mr, r)=>
+                    var roles = db.MemRole.Where(mr => mr.Member == userId && mr.Roles.Org == firstOrg && mr.Roles.Status != Models.Config.Status.deleted ).OrderBy(mr => mr.Roles.OrderNum).Select(mr=>
                       new
                       {
-                          r.Id,
-                          r.PId,
-                          r.Name,
-                          r.Icon,
-                          r.Code,
-                          r.Org,
-                          r.Status,
-                          r.OrderNum,
-                          MemberCount = db.MemRole.Where(mr2 => mr2.Role == r.Id).Select(mr2 => mr.Member).Intersect(db.Members.Where(mem => mem.Status == Models.Config.Status.normal).Select(mem => mem.Id)).Count(),
-                          MenuCount = db.RoleMenu.Where(rm => rm.Role == r.Id).Select(om => om.Menu).Intersect(db.Menus.Where(menu => menu.Status == Models.Config.Status.normal).Select(menu => menu.Id)).Count(),
-                          HasChildren = db.Roles.Where(r2 => r2.PId == r.Id && r2.Status != Models.Config.Status.deleted).Any()
+                          mr.Roles.Id,
+                          mr.Roles.PId,
+                          mr.Roles.Name,
+                          mr.Roles.Icon,
+                          mr.Roles.Code,
+                          mr.Roles.Org,
+                          OrgName = db.Orgs.FirstOrDefault(o => o.Id == mr.Roles.Org).Name,
+                          mr.Roles.Status,
+                          mr.Roles.OrderNum,
+                          Menus = db.RoleMenu.Where(rm => rm.Role == mr.Roles.Id && rm.Menus.Status == Models.Config.Status.normal).Select(rm => rm.Menu),
+                          MemberCount = db.MemRole.Where(mr2 => mr2.Role == mr.Roles.Id &&mr2.Members.Status == Models.Config.Status.normal).Count(),
+                          HasChildren = db.Roles.Where(r2 => r2.PId == mr.Roles.Id && r2.Status != Models.Config.Status.deleted).Any()
                       });
                     return Json(new { status = "success", msg = "获取成功", content = roles });
                 }
                 else
                 {
-                    var powerRole = db.MemRole.Where(mr => mr.Member == userId).Select(mr => mr.Role);
-                    var powerRoles = powerRole.Concat(db.Roles.Where(r => powerRole.Contains(r.PId) && r.Status != Models.Config.Status.deleted).Select(r => r.Id));
+                    var orgIds = db.MemOrg.Where(mo => mo.Member == userId && mo.Orgs.Status == Models.Config.Status.normal).Select(mo => mo.Org).ToList();
+
+                    var powerRoles = db.Roles.Where(r => orgIds.Contains(r.Org) && r.Status == Models.Config.Status.normal).Select(r => r.Id);
                     if (!powerRoles.Contains(pId))
                     {
-                        return Json(new { status = "fail", msg = "获取失败" });
+                        //节点非法
+                        return Json(new { status = "fail", msg = "节点非法" });
                     }
-                    var roles = db.Roles.Where(r => r.Id == pId && r.Status != Models.Config.Status.deleted).Select(r => new
+                    var roles = db.Roles.Where(r => r.PId == pId && r.Status != Models.Config.Status.deleted && r.Org == org).OrderBy(r=>r.OrderNum).Select(r => new
                     {
                         r.Id,
                         r.PId,
                         r.Name,
+                        OrgName = db.Orgs.FirstOrDefault(o => o.Id == r.Org).Name,
                         r.Icon,
                         r.Code,
                         r.Org,
                         r.Status,
                         r.OrderNum,
-                        MemberCount = db.MemRole.Where(mr2 => mr2.Role == r.Id).Select(mr2 => mr2.Member).Intersect(db.Members.Where(mem => mem.Status == Models.Config.Status.normal).Select(mem => mem.Id)).Count(),
-                        MenuCount = db.RoleMenu.Where(rm => rm.Role == r.Id).Select(om => om.Menu).Intersect(db.Menus.Where(menu => menu.Status == Models.Config.Status.normal).Select(menu => menu.Id)).Count(),
+                        Menus = db.RoleMenu.Where(rm=>rm.Role == r.Id && rm.Menus.Status == Models.Config.Status.normal).Select(rm=>rm.Menu),
+                        MemberCount = db.MemRole.Where(mr2 => mr2.Role == r.Id && mr2.Members.Status == Models.Config.Status.normal).Count(),
                         HasChildren = db.Roles.Where(r2 => r2.PId == r.Id && r2.Status != Models.Config.Status.deleted).Any()
                     });
                     return Json(new { status = "success", msg = "获取成功", content = roles });
@@ -143,7 +181,7 @@ namespace WebApi.Controllers.Web
             catch (Exception ex)
             {
                 Helper.LogHelper.WriteErrorLog(ex);
-                return Json(new { status = "fail", msg = "获取失败" });
+                return Json(new { status = "fail", msg = "服务器内部错误" });
             }
         }
 
@@ -153,42 +191,65 @@ namespace WebApi.Controllers.Web
         /// <param name="role"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<IHttpActionResult> SaveOrg(RoleReq.Role role)
+        public async Task<IHttpActionResult> SaveRole(RoleReq.Role role)
         {
             if (ModelState.IsValid)
             {
-                var pRole =  await db.Roles.FindAsync(role.PId);
-                if(pRole == null)
+                if (role.Status > Models.Config.Status.forbidden || role.Status < Models.Config.Status.deleted)
                 {
-                    //父节点非法
-                    return Json(new { status = "fail", msg = "保存失败" });
+                    return Json(new { status = "fail", msg = "状态错误" });
                 }
-                if(db.Menus.Where(m=>m.Status == Models.Config.Status.normal).Select(m => m.Id).Intersect(role.Menus).Count() != role.Menus.Count()){
+                Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
+
+               
+                //根据用户角色查找所有的menu
+                var menuIds = (from mr in db.MemRole
+                               where mr.Member == userId
+                               join rm in db.RoleMenu
+                               on mr.Role equals rm.Role
+                               where rm.Menus.Status == Models.Config.Status.normal
+                               select rm.Menu);
+                if(menuIds.Intersect(role.Menus).Count() != role.Menus.Count())
+                {
                     //菜单非法
-                    return Json(new { status = "fail", msg = "保存失败" });
+                    return Json(new { status = "fail", msg = "菜单非法" });
+                }
+                var orgIds = db.MemOrg.Where(mo => mo.Member == userId && mo.Orgs.Status == Models.Config.Status.normal).Select(mo => mo.Org).ToList();
+                if (!orgIds.Contains(role.Org))
+                {
+                    //部门非法
+                    return Json(new { status = "fail", msg = "部门非法" });
+                }
+                var roles = db.Roles.Where(r => orgIds.Contains(r.Org) && r.Status == Models.Config.Status.normal).Select(r=>r.Id);
+                if (!roles.Contains(role.PId))
+                {
+                    //节点非法
+                    return Json(new { status = "fail", msg = "节点非法" });
                 }
                 DataBase.Roles roleDB = new DataBase.Roles
                 {
                     Id = Guid.NewGuid(),
                     PId = role.PId,
                     Name = role.Name,
+                    Org = role.Org,
                     Code = role.Code,
                     Icon = role.Icon,
                     Status = role.Status,
                     OrderNum = role.OrderNum,
                     RoleMenu = new List<DataBase.RoleMenu>()
                 };
+                db.Entry(roleDB).State = System.Data.Entity.EntityState.Added;
                 foreach (Guid menu in role.Menus)
                 {
                     roleDB.RoleMenu.Add(new DataBase.RoleMenu { Role = roleDB.Id, Menu = menu });
                 }
-                db.Entry(roleDB).State = System.Data.Entity.EntityState.Added;
+
                 try
                 {
                     await db.SaveChangesAsync();
                     return Json(new { status = "success", msg = "保存成功" });
                 }
-                catch (DbUpdateException ex)
+                catch (Exception ex)
                 {
                     Helper.LogHelper.WriteErrorLog(ex);
                     return Json(new { status = "fail", msg = "保存失败" });
@@ -208,29 +269,44 @@ namespace WebApi.Controllers.Web
         /// <param name="role"></param>
         /// <returns></returns>
         [HttpPut]
-        public async Task<IHttpActionResult> UpdateOrg(RoleReq.Role role)
+        public async Task<IHttpActionResult> UpdateRole(RoleReq.Role role)
         {
             if (ModelState.IsValid)
             {
-                DataBase.Roles roleDB = await db.Roles.FindAsync(role.Id);
-                if (roleDB == null || roleDB.Id == Guid.Parse("00000000-0000-0000-0001-000000000000"))
+                if (role.Status > Models.Config.Status.forbidden || role.Status < Models.Config.Status.deleted)
                 {
-                    //节点非法
-                    //根部门不允许修改
-                    return Json(new { status = "fail", msg = "请求参数错误" });
+                    return Json(new { status = "fail", msg = "状态错误" });
                 }
-                var pRole = await db.Roles.FindAsync(role.PId);
-                if (pRole == null)
-                {
-                    //父节点非法
-                    return Json(new { status = "fail", msg = "保存失败" });
-                }
-                if (db.Menus.Where(m => m.Status == Models.Config.Status.normal).Select(m => m.Id).Intersect(role.Menus).Count() != role.Menus.Count())
+                Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
+
+                
+                //根据用户角色查找所有的menu
+                var menuIds = (from mr in db.MemRole
+                               where mr.Member == userId
+                               join rm in db.RoleMenu
+                               on mr.Role equals rm.Role
+                               where rm.Menus.Status == Models.Config.Status.normal
+                               select rm.Menu);
+                if (menuIds.Intersect(role.Menus).Count() != role.Menus.Count())
                 {
                     //菜单非法
-                    return Json(new { status = "fail", msg = "保存失败" });
+                    return Json(new { status = "fail", msg = "菜单非法" });
                 }
-                roleDB.Id = role.Id;
+                var orgIds = db.MemOrg.Where(mo => mo.Member == userId && mo.Orgs.Status == Models.Config.Status.normal).Select(mo => mo.Org).ToList();
+                if (!orgIds.Contains(role.Org))
+                {
+                    //部门非法
+                    return Json(new { status = "fail", msg = "部门非法" });
+                }
+                var roles = db.Roles.Where(r => orgIds.Contains(r.Org) && r.Status == Models.Config.Status.normal).Select(r => r.Id);
+                if (!roles.Contains(role.PId) || !roles.Contains((Guid)role.Id) || role.Id == Guid.Parse("00000000-0000-0000-0001-000000000000"))
+                {
+                    //节点非法
+                    return Json(new { status = "fail", msg = "节点非法" });
+                }
+                DataBase.Roles roleDB = await db.Roles.FindAsync(role.Id);
+
+                roleDB.Id = (Guid)role.Id;
                 roleDB.PId = role.PId;
                 roleDB.Name = role.Name;
                 roleDB.Org = role.Org;
@@ -238,6 +314,8 @@ namespace WebApi.Controllers.Web
                 roleDB.Icon = role.Icon;
                 roleDB.Status = role.Status;
                 roleDB.OrderNum = role.OrderNum;
+                //删除已有的多对多关系
+                db.RoleMenu.RemoveRange(db.RoleMenu.Where(rm=>rm.Role == roleDB.Id).Select(rm=>rm));
                 roleDB.RoleMenu = new List<DataBase.RoleMenu>();
                 foreach (Guid menu in role.Menus)
                 {
@@ -249,7 +327,7 @@ namespace WebApi.Controllers.Web
                     await db.SaveChangesAsync();
                     return Json(new { status = "success", msg = "修改成功" });
                 }
-                catch (DbUpdateException ex)
+                catch (Exception ex)
                 {
                     Helper.LogHelper.WriteErrorLog(ex);
                     return Json(new { status = "fail", msg = "修改失败" });
@@ -269,22 +347,36 @@ namespace WebApi.Controllers.Web
         /// <param name="roleStatus"></param>
         /// <returns></returns>
         [HttpPut]
-        public async Task<IHttpActionResult> UpdateOrgStatus(RoleReq.RoleStatus roleStatus)
+        public async Task<IHttpActionResult> UpdateRoleStatus(RoleReq.RoleStatus roleStatus)
         {
             if (ModelState.IsValid)
             {
-                DataBase.Roles roleDB = await db.Roles.FindAsync(roleStatus.Id);
-                if (roleDB == null || roleStatus.Id == Guid.Parse("00000000-0000-0000-0001-000000000000"))
+                if (roleStatus.Status > Models.Config.Status.forbidden || roleStatus.Status < Models.Config.Status.deleted)
                 {
-                    //根部门不许操作
-                    return Json(new { status = "fail", msg = "请求参数错误" });
+                    return Json(new { status = "fail", msg = "状态错误" });
                 }
-                roleDB.Status = roleStatus.Status;
-                if (roleStatus.Status == -1)
+                Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
+
+                DataBase.Roles roleDB = await db.Roles.FindAsync(roleStatus.Id);
+
+                var orgIds = db.MemOrg.Where(mo => mo.Member == userId && mo.Orgs.Status == Models.Config.Status.normal).Select(mo => mo.Org).ToList();
+                
+                var roles = db.Roles.Where(r => orgIds.Contains(r.Org) && r.Status != Models.Config.Status.deleted).Select(r => r.Id);
+                if (!roles.Contains(roleStatus.Id))
                 {
-                    //删除
-                    roleDB.RoleMenu = new List<DataBase.RoleMenu>();
-                    roleDB.MemRole = new List<DataBase.MemRole>();
+                    //节点非法
+                    return Json(new { status = "fail", msg = "节点非法" });
+                }
+
+                roleDB.Status = roleStatus.Status;
+                //禁用，删除下级角色
+                if (roleStatus.Status != Models.Config.Status.normal)
+                {
+                    foreach (var role in db.Roles.Where(m => m.PId == roleStatus.Id && m.Status != Models.Config.Status.deleted))
+                    {
+                        role.Status = roleStatus.Status;
+                        db.Entry(role).State = System.Data.Entity.EntityState.Modified;
+                    }
                 }
                 db.Entry(roleDB).State = System.Data.Entity.EntityState.Modified;
                 try

@@ -27,11 +27,19 @@ namespace WebApi.Controllers.Web
         {
             if (ModelState.IsValid)
             {
+                Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
+                var menuIds = (from mr in db.MemRole
+                               where mr.Member == userId
+                               join rm in db.RoleMenu
+                               on mr.Role equals rm.Role
+                               where rm.Menus.Status == Models.Config.Status.normal
+                               select rm.Menu).ToList();
+              
                 var pMenu = await db.Menus.FindAsync(menu.PId);
-                if (pMenu == null)
+                if (!menuIds.Contains(menu.PId))
                 {
                     //父节点非法
-                    return Json(new { status = "fail", msg = "父节点不存在" });
+                    return Json(new { status = "fail", msg = "父节点非法" });
                 }
                 if(menu.Type == Models.Config.MenuType.root)
                 {
@@ -41,6 +49,7 @@ namespace WebApi.Controllers.Web
                 {
                     return Json(new { status = "fail", msg = "状态错误" });
                 }
+
                 DataBase.Menus menuDB = new DataBase.Menus
                 {
                     Id = Guid.NewGuid(),
@@ -85,17 +94,22 @@ namespace WebApi.Controllers.Web
         {
             if (ModelState.IsValid)
             {
-                DataBase.Menus menuDB = await db.Menus.FindAsync(menu.Id);
-                if (menuDB == null || menuDB.Id == Guid.Parse("00000000-0000-0000-0001-000000000000"))
-                {
-                    //节点非法
-                    //根菜单不允许修改
-                    return Json(new { status = "fail", msg = "根菜单不允许操作" });
-                }
                 if (menu.Status > Models.Config.Status.forbidden || menu.Status < Models.Config.Status.deleted)
                 {
                     return Json(new { status = "fail", msg = "状态错误" });
                 }
+                Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
+                var menuIds = (from mr in db.MemRole
+                               where mr.Member == userId
+                               join rm in db.RoleMenu
+                               on mr.Role equals rm.Role
+                               where rm.Menus.Status == Models.Config.Status.normal
+                               select rm.Menu).ToList();
+                if(!menuIds.Contains((Guid)menu.Id) ||!menuIds.Contains(menu.PId) || menu.Id == Guid.Parse("00000000-0000-0000-0001-000000000000")){
+                    //节点非法
+                    return Json(new { status = "fail", msg = "所选节点非法" });
+                }
+                DataBase.Menus menuDB = await db.Menus.FindAsync(menu.Id);
                 menuDB.Id = (Guid)menu.Id;
                 menuDB.PId = menu.PId;
                 menuDB.Name = menu.Name;
@@ -136,16 +150,24 @@ namespace WebApi.Controllers.Web
         {
             if (ModelState.IsValid)
             {
-                DataBase.Menus menuDB = await db.Menus.FindAsync(menuStatus.Id);
-                if (menuDB == null || menuStatus.Id == Guid.Parse("00000000-0000-0000-0001-000000000000"))
-                {
-                    //根菜单不许操作
-                    return Json(new { status = "fail", msg = "根菜单不允许操作" });
-                }
                 if (menuStatus.Status > Models.Config.Status.forbidden || menuStatus.Status < Models.Config.Status.deleted)
                 {
                     return Json(new { status = "fail", msg = "状态错误" });
                 }
+                Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
+                var menuIds = (from mr in db.MemRole
+                               where mr.Member == userId
+                               join rm in db.RoleMenu
+                               on mr.Role equals rm.Role
+                               where rm.Menus.Status == Models.Config.Status.normal
+                               select rm.Menu).ToList();
+                if (!menuIds.Contains(menuStatus.Id) || menuStatus.Id == Guid.Parse("00000000-0000-0000-0001-000000000000"))
+                {
+                    //节点非法
+                    return Json(new { status = "fail", msg = "所选节点非法" });
+                }
+                DataBase.Menus menuDB = await db.Menus.FindAsync(menuStatus.Id);
+
                 menuDB.Status = menuStatus.Status;
                 //禁用，删除下级菜单
                 if(menuStatus.Status != Models.Config.Status.normal)
@@ -179,18 +201,9 @@ namespace WebApi.Controllers.Web
         /// <param name="pId"></param>
         /// <returns></returns>
         [HttpGet]
-        public async Task<IHttpActionResult> GetLazyMenu(Guid pId)
+        public IHttpActionResult GetLazyMenu(Guid pId)
         {
             Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
-            if (userId == Guid.Empty)
-            {
-                return Json(new { status = "fail", msg = "请求错误" });
-            }
-            var member = await db.Members.FindAsync(userId);
-            if (member == null || member.Status != Models.Config.Status.normal)
-            {
-                return Json(new { status = "fail", msg = "用户不存在或已被禁用" });
-            }
             try
             {
 
@@ -273,23 +286,16 @@ namespace WebApi.Controllers.Web
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public async Task<IHttpActionResult> ListMenuMR()
+        public IHttpActionResult ListMenuMR()
         {
             Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
-            if (userId == Guid.Empty)
-            {
-                return Json(new { status = "fail", msg = "请求错误" });
-            }
-            var member = await db.Members.FindAsync(userId);
-            if (member == null || member.Status != Models.Config.Status.normal)
-            {
-                return Json(new { status = "fail", msg = "用户不存在或已被禁用" });
-            }
+            
             //根据用户角色查找所有的menu
             var menuIds = (from mr in db.MemRole
                            where mr.Member == userId
                            join rm in db.RoleMenu
                            on mr.Role equals rm.Role
+                           where rm.Menus.Status == Models.Config.Status.normal
                            select rm.Menu).ToList();
             if (menuIds.Count() == 0)
             {
@@ -320,18 +326,10 @@ namespace WebApi.Controllers.Web
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public async Task<IHttpActionResult> GetMenuTreeMR()
+        public IHttpActionResult GetMenuTreeMR()
         {
             Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
-            if (userId == Guid.Empty)
-            {
-                return Json(new { status = "fail", msg = "请求错误" });
-            }
-            var member = await db.Members.FindAsync(userId);
-            if (member == null || member.Status != Models.Config.Status.normal)
-            {
-                return Json(new { status = "fail", msg = "用户不存在或已被禁用" });
-            }
+           
             //根据用户角色查找所有的menu
             var menuIds = (from mr in db.MemRole
                            where mr.Member == userId
@@ -377,18 +375,10 @@ namespace WebApi.Controllers.Web
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public async Task<IHttpActionResult> GetMenuTreeMO()
+        public IHttpActionResult GetMenuTreeMO()
         {
             Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
-            if (userId == Guid.Empty)
-            {
-                return Json(new { status = "fail", msg = "请求错误" });
-            }
-            var member = await db.Members.FindAsync(userId);
-            if (member == null || member.Status != Models.Config.Status.normal)
-            {
-                return Json(new { status = "fail", msg = "用户不存在或已被禁用" });
-            }
+            
             //根据用户部门查找所有的menu
             var menuIds = (from mo in db.MemOrg
                            where mo.Member == userId
@@ -434,18 +424,10 @@ namespace WebApi.Controllers.Web
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public async Task<IHttpActionResult> GetRouterTreeMR()
+        public IHttpActionResult GetRouterTreeMR()
         {
             Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
-            if (userId == Guid.Empty)
-            {
-                return Json(new { status = "fail", msg = "请求错误" });
-            }
-            var member = await db.Members.FindAsync(userId);
-            if (member == null || member.Status != Models.Config.Status.normal)
-            {
-                return Json(new { status = "fail", msg = "用户不存在或已被禁用" });
-            }
+            
             //根据用户角色查找所有的menu
             var menuIds = (from mr in db.MemRole
                            where mr.Member == userId
@@ -557,10 +539,10 @@ namespace WebApi.Controllers.Web
                 Controller = menu.Controller,
                 Action = menu.Action,
                 Icon = menu.Icon,
+                Children = new List<MenuRes.MenuTree>()
             };
             if (children.Any())
             {
-                child.Children = new List<MenuRes.MenuTree>();
                 foreach (var item in children)
                 {
                     child.Children.Add(MenuTreeHelper(item.Id, menus));

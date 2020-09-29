@@ -17,17 +17,31 @@ namespace WebApi.Controllers.Web
         private readonly DataBase.DB db = new DataBase.DB();
         private const string TOKEN = "ZFDYES";
         /// <summary>
+        /// 获取用户的部门列表
+        /// </summary>
+        /// <returns></returns>
+        public IHttpActionResult ListOrgs()
+        {
+            Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
+            var orgs = db.MemOrg.Where(mo => mo.Member == userId && mo.Orgs.Status == Models.Config.Status.normal).OrderBy(mo =>mo.Orgs.OrderNum).Select(mo => new { 
+                mo.Orgs.Id,
+                mo.Orgs.Name,
+                mo.Orgs.PId
+            });
+            return Json(new { status = "success", msg = "获取成功", content = orgs });
+        }
+        /// <summary>
         /// 获取部门树列表
         /// </summary>
         /// <returns></returns>
         [HttpGet]
         public IHttpActionResult GetOrgTree()
         {
-            Guid userId = Guid.Parse(HttpContext.Current.Request.Headers["sessionId"]);
+            Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
             try
             {
-                var orgIds = db.MemOrg.Where(mo => mo.Member == userId).Select(mo => mo.Org).ToList();
-                var orgs = db.Orgs.Where(o => o.Status == Models.Config.Status.normal && (orgIds.Contains(o.Id) || orgIds.Contains(o.PId))).OrderBy(o => o.OrderNum).Select(o => new OrgRes.Org
+                var orgIds = db.MemOrg.Where(mo => mo.Member == userId && mo.Orgs.Status == Models.Config.Status.normal).OrderBy(mo => mo.Orgs.OrderNum).Select(mo => mo.Org).ToList();
+                var orgs = db.Orgs.Where(o => o.Status == Models.Config.Status.normal && (orgIds.Contains(o.Id) || orgIds.Contains(o.PId))).Select(o => new OrgRes.Org
                 {
                     Id = o.Id,
                     PId = o.PId,
@@ -46,7 +60,7 @@ namespace WebApi.Controllers.Web
             catch (Exception ex)
             {
                 Helper.LogHelper.WriteErrorLog(ex);
-                return Json(new { status = "fail", msg = "获取失败" });
+                return Json(new { status = "fail", msg = "服务器内部错误" });
             }
         }
 
@@ -70,11 +84,10 @@ namespace WebApi.Controllers.Web
             {
                 Id = org.Id,
                 Name = org.Name,
-
-            };
+                Children = new List<OrgRes.OrgTree>()
+        };
             if (children.Any())
             {
-                child.Children = new List<OrgRes.OrgTree>();
                 foreach (var item in children)
                 {
                     child.Children.Add(OrgTreeHelper(item.Id, orgs));
@@ -90,18 +103,10 @@ namespace WebApi.Controllers.Web
         /// <param name="pId"></param>
         /// <returns></returns>
         [HttpGet]
-        public async Task<IHttpActionResult> GetLazyOrg(Guid pId)
+        public IHttpActionResult GetLazyOrg(Guid pId)
         {
             Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
-            if (userId == Guid.Empty)
-            {
-                return Json(new { status = "fail", msg = "请求错误" });
-            }
-            var member = await db.Members.FindAsync(userId);
-            if (member == null || member.Status != Models.Config.Status.normal)
-            {
-                return Json(new { status = "fail", msg = "用户不存在或已被禁用" });
-            }
+            
             try
             {
                 if (pId == Guid.Empty)
@@ -131,7 +136,7 @@ namespace WebApi.Controllers.Web
                     {
                         return Json(new { status = "fail", msg = "所选部门不存在或无权限" });
                     }
-                    var orgs = db.Orgs.Where(o => o.Id == pId && o.Status != Models.Config.Status.deleted).Select(o => new
+                    var orgs = db.Orgs.Where(o => o.PId == pId && o.Status != Models.Config.Status.deleted).OrderBy(o =>o.OrderNum).Select(o => new
                     {
                         o.Id,
                         o.PId,
