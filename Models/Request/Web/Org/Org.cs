@@ -8,7 +8,7 @@ namespace WebApi.Models.Request.Web.Org
 {
     public class Org
     {
-        public Guid Id { get; set; }
+        public Guid? Id { get; set; }
         [Required(ErrorMessage = "请选择父级部门")]
         public Guid PId { get; set; }
         [Required(ErrorMessage = "请输入部门名称")]
@@ -21,8 +21,8 @@ namespace WebApi.Models.Request.Web.Org
         [Required(ErrorMessage = "请进行排序")]
         public short OrderNum { get; set; }
         //菜单
-        [Required(ErrorMessage = "请选择部门菜单")]
-        public List<Guid> Menus { get; set; }
+        //[Required(ErrorMessage = "请选择部门菜单")]
+        //public List<Guid> Menus { get; set; }
         public string Code { get; set; }
         public string Icon { get; set; }
     }

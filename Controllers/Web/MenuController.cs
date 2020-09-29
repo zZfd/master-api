@@ -159,7 +159,7 @@ namespace WebApi.Controllers.Web
                                where mr.Member == userId
                                join rm in db.RoleMenu
                                on mr.Role equals rm.Role
-                               where rm.Menus.Status == Models.Config.Status.normal
+                               where rm.Menus.Status != Models.Config.Status.deleted
                                select rm.Menu).ToList();
                 if (!menuIds.Contains(menuStatus.Id) || menuStatus.Id == Guid.Parse("00000000-0000-0000-0001-000000000000"))
                 {
@@ -211,6 +211,7 @@ namespace WebApi.Controllers.Web
                                where mr.Member == userId
                                join rm in db.RoleMenu
                                on mr.Role equals rm.Role
+                               where mr.Roles.Status != Models.Config.Status.deleted
                                select rm.Menu).ToList();
                 if (menuIds.Count() == 0)
                 {

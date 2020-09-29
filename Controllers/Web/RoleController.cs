@@ -152,9 +152,9 @@ namespace WebApi.Controllers.Web
                 }
                 else
                 {
-                    var orgIds = db.MemOrg.Where(mo => mo.Member == userId && mo.Orgs.Status == Models.Config.Status.normal).Select(mo => mo.Org).ToList();
+                    var orgIds = db.MemOrg.Where(mo => mo.Member == userId && mo.Orgs.Status != Models.Config.Status.deleted).Select(mo => mo.Org).ToList();
 
-                    var powerRoles = db.Roles.Where(r => orgIds.Contains(r.Org) && r.Status == Models.Config.Status.normal).Select(r => r.Id);
+                    var powerRoles = db.Roles.Where(r => orgIds.Contains(r.Org) && r.Status != Models.Config.Status.deleted).Select(r => r.Id);
                     if (!powerRoles.Contains(pId))
                     {
                         //节点非法

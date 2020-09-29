@@ -65,36 +65,7 @@ namespace WebApi.Controllers.Web
         }
 
 
-        /// <summary>
-        /// 递归生成组织树结构（辅助方法）
-        /// </summary>
-        /// <param name="pId"></param>
-        /// <param name="orgs"></param>
-        /// <returns></returns>
-        private OrgRes.OrgTree OrgTreeHelper(Guid pId, List<OrgRes.Org> orgs)
-        {
-            if (orgs == null || orgs.Count() == 0)
-            {
-                return null;
-            }
-            var org = orgs.Where(m => m.Id == pId).First();
-            var children = orgs.Where(o => o.PId == pId).OrderBy(o => o.OrderNum).ToList();
-            orgs.Remove(org);
-            var child = new OrgRes.OrgTree
-            {
-                Id = org.Id,
-                Name = org.Name,
-                Children = new List<OrgRes.OrgTree>()
-        };
-            if (children.Any())
-            {
-                foreach (var item in children)
-                {
-                    child.Children.Add(OrgTreeHelper(item.Id, orgs));
-                }
-            }
-            return child;
-        }
+     
 
         /// <summary>
         /// 懒加载部门树
@@ -130,8 +101,9 @@ namespace WebApi.Controllers.Web
                 }
                 else
                 {
-                    var powerOrg = db.MemOrg.Where(mo => mo.Member == userId).Select(mo => mo.Org);
-                    var powerOrgs = powerOrg.Concat(db.Orgs.Where(o => powerOrg.Contains(o.PId) && o.Status != Models.Config.Status.deleted).Select(o => o.Id));
+                    var powerOrg = db.MemOrg.Where(mo => mo.Member == userId).Select(mo => new OrgRes.Org { Id = mo.Org, PId = mo.Orgs.PId }).ToList();
+                    List<Guid> powerOrgs = new List<Guid>();
+                    PowerOrgsHelper(powerOrg, powerOrgs, Models.Config.Status.deleted);
                     if (!powerOrgs.Contains(pId))
                     {
                         return Json(new { status = "fail", msg = "所选部门不存在或无权限" });
@@ -171,17 +143,23 @@ namespace WebApi.Controllers.Web
         {
             if (ModelState.IsValid)
             {
+                Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
+
+                var powerOrg = db.MemOrg.Where(mo => mo.Member == userId).Select(mo => new OrgRes.Org { Id = mo.Org,PId = mo.Orgs.PId}).ToList();
+                List<Guid> powerOrgs = new List<Guid>();
+                PowerOrgsHelper(powerOrg, powerOrgs, Models.Config.Status.normal);
+
+                if (!powerOrgs.Contains(org.PId))
+                {
+                    return Json(new { status = "fail", msg = "所选部门不存在或无权限" });
+                }
                 var pOrg = await db.Roles.FindAsync(org.PId);
-                if (pOrg == null)
-                {
-                    //父节点非法
-                    return Json(new { status = "fail", msg = "保存失败" });
-                }
-                if (db.Menus.Where(m => m.Status == Models.Config.Status.normal).Select(m => m.Id).Intersect(org.Menus).Count() != org.Menus.Count())
-                {
-                    //菜单非法
-                    return Json(new { status = "fail", msg = "保存失败" });
-                }
+                
+                //if (db.Menus.Where(m => m.Status == Models.Config.Status.normal).Select(m => m.Id).Intersect(org.Menus).Count() != org.Menus.Count())
+                //{
+                //    //菜单非法
+                //    return Json(new { status = "fail", msg = "保存失败" });
+                //}
                 DataBase.Orgs orgDB = new DataBase.Orgs
                 {
                     Id = Guid.NewGuid(),
@@ -193,17 +171,17 @@ namespace WebApi.Controllers.Web
                     OrderNum = org.OrderNum,
                     OrgMenu = new List<DataBase.OrgMenu>()
                 };
-                foreach (Guid menu in org.Menus)
-                {
-                    orgDB.OrgMenu.Add(new DataBase.OrgMenu { Org = orgDB.Id, Menu = menu });
-                }
+                //foreach (Guid menu in org.Menus)
+                //{
+                //    orgDB.OrgMenu.Add(new DataBase.OrgMenu { Org = orgDB.Id, Menu = menu });
+                //}
                 db.Entry(orgDB).State = System.Data.Entity.EntityState.Added;
                 try
                 {
                     await db.SaveChangesAsync();
                     return Json(new { status = "success", msg = "保存成功" });
                 }
-                catch (DbUpdateException ex)
+                catch (Exception ex)
                 {
                     Helper.LogHelper.WriteErrorLog(ex);
                     return Json(new { status = "fail", msg = "保存失败" });
@@ -215,7 +193,7 @@ namespace WebApi.Controllers.Web
                 return Json(new { status = "fail", msg = "请求参数错误" });
             }
         }
-
+       
 
         /// <summary>
         /// 修改部门（包括权限）
@@ -227,43 +205,40 @@ namespace WebApi.Controllers.Web
         {
             if (ModelState.IsValid)
             {
+                Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
+
+                var powerOrg = db.MemOrg.Where(mo => mo.Member == userId).Select(mo => new OrgRes.Org { Id = mo.Org, PId = mo.Orgs.PId }).ToList();
+                List<Guid> powerOrgs = new List<Guid>();
+                PowerOrgsHelper(powerOrg, powerOrgs, Models.Config.Status.normal);
+                if (!powerOrgs.Contains(org.PId) || !powerOrgs.Contains((Guid)org.Id) || org.Id == Guid.Parse("00000000-0000-0000-0001-000000000000"))
+                {
+                    return Json(new { status = "fail", msg = "所选部门不存在或无权限" });
+                }
                 DataBase.Orgs orgDB = await db.Orgs.FindAsync(org.Id);
-                if (orgDB == null || org.Id == Guid.Parse("00000000-0000-0000-0001-000000000000"))
-                {
-                    //节点非法
-                    //根部门不允许修改
-                    return Json(new { status = "fail", msg = "请求参数错误" });
-                }
-                var pOrg = await db.Roles.FindAsync(org.PId);
-                if (pOrg == null)
-                {
-                    //父节点非法
-                    return Json(new { status = "fail", msg = "保存失败" });
-                }
-                if (db.Menus.Where(m => m.Status == Models.Config.Status.normal).Select(m => m.Id).Intersect(org.Menus).Count() != org.Menus.Count())
-                {
-                    //菜单非法
-                    return Json(new { status = "fail", msg = "保存失败" });
-                }
-                orgDB.Id = org.Id;
+                //if (db.Menus.Where(m => m.Status == Models.Config.Status.normal).Select(m => m.Id).Intersect(org.Menus).Count() != org.Menus.Count())
+                //{
+                //    //菜单非法
+                //    return Json(new { status = "fail", msg = "保存失败" });
+                //}
+                orgDB.Id = (Guid)org.Id;
                 orgDB.PId = org.PId;
                 orgDB.Name = org.Name;
                 orgDB.Code = org.Code;
                 orgDB.Icon = org.Icon;
                 orgDB.Status = org.Status;
                 orgDB.OrderNum = org.OrderNum;
-                orgDB.OrgMenu = new List<DataBase.OrgMenu>();
-                foreach (Guid menu in org.Menus)
-                {
-                    orgDB.OrgMenu.Add(new DataBase.OrgMenu { Org = orgDB.Id, Menu = menu });
-                }
+                //orgDB.OrgMenu = new List<DataBase.OrgMenu>();
+                //foreach (Guid menu in org.Menus)
+                //{
+                //    orgDB.OrgMenu.Add(new DataBase.OrgMenu { Org = orgDB.Id, Menu = menu });
+                //}
                 db.Entry(orgDB).State = System.Data.Entity.EntityState.Modified;
                 try
                 {
                     await db.SaveChangesAsync();
                     return Json(new { status = "success", msg = "修改成功" });
                 }
-                catch (DbUpdateException ex)
+                catch (Exception ex)
                 {
                     Helper.LogHelper.WriteErrorLog(ex);
                     return Json(new { status = "fail", msg = "修改失败" });
@@ -287,19 +262,31 @@ namespace WebApi.Controllers.Web
         {
             if (ModelState.IsValid)
             {
-                DataBase.Orgs orgDB = await db.Orgs.FindAsync(orgStatus.Id);
-                if (orgDB == null || orgStatus.Id == Guid.Parse("00000000-0000-0000-0001-000000000000"))
+                if (orgStatus.Status > Models.Config.Status.forbidden || orgStatus.Status < Models.Config.Status.deleted)
                 {
-                    //根部门不许操作
-                    return Json(new { status = "fail", msg = "请求参数错误" });
+                    return Json(new { status = "fail", msg = "状态错误" });
                 }
-                orgDB.Status = orgStatus.Status;
-                if (orgStatus.Status == -1)
+                Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
+
+                var powerOrg = db.MemOrg.Where(mo => mo.Member == userId).Select(mo => new OrgRes.Org { Id = mo.Org, PId = mo.Orgs.PId }).ToList();
+                List<Guid> powerOrgs = new List<Guid>();
+                PowerOrgsHelper(powerOrg, powerOrgs, Models.Config.Status.deleted);
+
+                if (!powerOrgs.Contains(orgStatus.Id) || orgStatus.Id == Guid.Parse("00000000-0000-0000-0001-000000000000"))
                 {
-                    //删除
-                    orgDB.OrgMenu = new List<DataBase.OrgMenu>();
-                    orgDB.MemOrg = new List<DataBase.MemOrg>();
-                    orgDB.Roles = new List<DataBase.Roles>();
+                    return Json(new { status = "fail", msg = "所选部门不存在或无权限" });
+                }
+                DataBase.Orgs orgDB = await db.Orgs.FindAsync(orgStatus.Id);
+                
+                orgDB.Status = orgStatus.Status;
+                //禁用，删除下级部门
+                if (orgStatus.Status != Models.Config.Status.normal)
+                {
+                    foreach (var org in db.Orgs.Where(m => m.PId == orgStatus.Id && m.Status != Models.Config.Status.deleted))
+                    {
+                        org.Status = orgStatus.Status;
+                        db.Entry(org).State = System.Data.Entity.EntityState.Modified;
+                    }
                 }
                 db.Entry(orgDB).State = System.Data.Entity.EntityState.Modified;
                 try
@@ -316,6 +303,74 @@ namespace WebApi.Controllers.Web
             else
             {
                 return Json(new { status = "fail", msg = "请求参数错误" });
+            }
+        }
+
+        /// <summary>
+        /// 递归生成组织树结构（辅助方法）
+        /// </summary>
+        /// <param name="pId"></param>
+        /// <param name="orgs"></param>
+        /// <returns></returns>
+        private OrgRes.OrgTree OrgTreeHelper(Guid pId, List<OrgRes.Org> orgs)
+        {
+            if (orgs == null || orgs.Count() == 0)
+            {
+                return null;
+            }
+            var org = orgs.Where(m => m.Id == pId).First();
+            var children = orgs.Where(o => o.PId == pId).OrderBy(o => o.OrderNum).ToList();
+            orgs.Remove(org);
+            var child = new OrgRes.OrgTree
+            {
+                Id = org.Id,
+                Name = org.Name,
+                Children = new List<OrgRes.OrgTree>()
+            };
+            if (children.Any())
+            {
+                foreach (var item in children)
+                {
+                    child.Children.Add(OrgTreeHelper(item.Id, orgs));
+                }
+            }
+            return child;
+        }
+
+        /// <summary>
+        /// 递归向下查找权限部门
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="result"></param>
+        /// <param name="status"></param>
+        private void PowerOrgsHelper(List<OrgRes.Org> source, List<Guid> result, short status)
+        {
+            result.AddRange(source.Select(s => s.Id));
+            if (status == Models.Config.Status.normal)
+            {
+                //只包含正常
+                foreach (var org in source)
+                {
+                    var s = db.Orgs.Where(o => o.PId == org.Id && o.Status == status).Select(o => new OrgRes.Org
+                    {
+                        Id = o.Id,
+                        PId = o.PId
+                    }).ToList();
+                    PowerOrgsHelper(s, result, status);
+                }
+            }
+            else
+            {
+                //不包含已删除
+                foreach (var org in source)
+                {
+                    var s = db.Orgs.Where(o => o.PId == org.Id && o.Status != Models.Config.Status.deleted).Select(o => new OrgRes.Org
+                    {
+                        Id = o.Id,
+                        PId = o.PId
+                    }).ToList();
+                    PowerOrgsHelper(s, result, status);
+                }
             }
         }
     }

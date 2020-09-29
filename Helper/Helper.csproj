@@ -46,6 +46,7 @@
     <Compile Include="LogHelper.cs" />
     <Compile Include="PaginationHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RandomHelper.cs" />
     <Compile Include="RSACryptoService.cs" />
     <Compile Include="TypeHelper.cs" />
   </ItemGroup>
