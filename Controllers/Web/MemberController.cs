@@ -91,38 +91,238 @@ namespace WebApi.Controllers.Web
             }).FirstOrDefault();
             return Json(new { status = "success", msg = "获取成功", content = loginInfo });
         }
-        [HttpGet]
-        public async Task<IHttpActionResult> ListOrgMember(Guid orgId,int pi,int ps)
+        
+        /// <summary>
+        /// 添加账户
+        /// </summary>
+        /// <param name="member"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<IHttpActionResult> SaveMember(ReqMem.Member member)
         {
-            Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
-            if (userId == Guid.Empty)
+            if (ModelState.IsValid)
             {
-                return Json(new { status = "fail", msg = "请求错误" });
+                Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
+                var powerOrgs = Factory.OrgFactory.GetPowerOrgs(userId, Models.Config.Status.normal, db);
+                if (powerOrgs.Intersect(member.Orgs).Count() != member.Orgs.Count())
+                {
+                    return Json(new { status = "fail", msg = "部门非法" });
+                }
+                var powerRoles = db.Roles.Where(r => r.Status == Models.Config.Status.normal && powerOrgs.Contains(r.Org)).Select(r => r.Id);
+                if (powerRoles.Intersect(member.Roles).Count() != member.Roles.Count())
+                {
+                    return Json(new { status = "fail", msg = "角色非法" });
+                }
+                var memberDB = new DataBase.Members
+                {
+                    Id = Guid.NewGuid(),
+                    Name = member.Name,
+                    NickName = member.NickName,
+                    Phone = member.Phone,
+                    Status = member.Status,
+                    PasswordSalt = Helper.RandomHelper.GetCodeStr(8),
+                    MemOrg = new List<DataBase.MemOrg>(),
+                    MemRole = new List<DataBase.MemRole>()
+                };
+                memberDB.Password = Helper.EncryptionHelper.SHA1("123456" + memberDB.PasswordSalt, Encoding.UTF8, false);
+                foreach(Guid org in member.Orgs)
+                {
+                    memberDB.MemOrg.Add(new DataBase.MemOrg { Member = memberDB.Id, Org = org });
+                }
+                foreach(Guid role in member.Roles)
+                {
+                    memberDB.MemRole.Add(new DataBase.MemRole { Member = memberDB.Id, Role = role });
+                }
+                db.Entry(memberDB).State = System.Data.Entity.EntityState.Added;
+                try
+                {
+                    await db.SaveChangesAsync();
+                    return Json(new { status = "success", msg = "保存成功" });
+                }catch(Exception ex)
+                {
+                    Helper.LogHelper.WriteErrorLog(ex);
+                    return Json(new { status = "fail", msg = "服务器内部错误" });
+                }
             }
-            var member = await db.Members.FindAsync(userId);
-            if (member == null || member.Status != Models.Config.Status.normal)
+            else
             {
-                return Json(new { status = "fail", msg = "用户不存在或已被禁用" });
+                return Json(new { status = "fail", msg = "请求参数错误" });
             }
-            var orgs = db.MemOrg.Where(mo => mo.Member == userId).Select(mo => mo.Org);
-            if (orgs.Count() == 0)
-            {
-                return Json(new { status = "fail", msg = "部门为空" });
-            }
-            if (!orgs.Contains(orgId))
-            {
-                return Json(new { status = "fail", msg = "部门不存在或无权限" });
-            }
-            var members = db.MemOrg.Where(mo => mo.Org == orgId).Select(mo2 => new ResMember.OrgMember
-            {
-                Id = mo2.Member,
-                Name = mo2.Members.Name,
-                Phone = mo2.Members.Phone,
-                Roles = db.MemRole.Where(mr => mr.Member == mo2.Member).Select(mr => mr.Roles.Name).ToArray()
-            });
+        }
 
-            var pagination = Helper.PaginationHelper<ResMember.OrgMember>.Paging(members, pi, ps);
-            return Json(new { status = "success", msg = "获取成功",content = pagination });
+        /// <summary>
+        /// 更新账户
+        /// </summary>
+        /// <param name="member"></param>
+        /// <returns></returns>
+        [HttpPut]
+        public async Task<IHttpActionResult> UpdateMember(ReqMem.Member member)
+        {
+            if (ModelState.IsValid)
+            {
+                Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
+                var powerOrgs = Factory.OrgFactory.GetPowerOrgs(userId, Models.Config.Status.normal, db);
+                var filterMemberIds = db.MemOrg.Where(mo => powerOrgs.Contains(mo.Org)).Select(mo => mo.Member).ToList();
+                if(member.Id == null || !filterMemberIds.Contains((Guid)member.Id))
+                {
+                    return Json(new { status = "fail", msg = "账户不存在或非法" });
+                }
+                if (powerOrgs.Intersect(member.Orgs).Count() != member.Orgs.Count())
+                {
+                    return Json(new { status = "fail", msg = "部门非法" });
+                }
+                var powerRoles = db.Roles.Where(r => r.Status == Models.Config.Status.normal && powerOrgs.Contains(r.Org)).Select(r => r.Id);
+                if (powerRoles.Intersect(member.Roles).Count() != member.Roles.Count())
+                {
+                    return Json(new { status = "fail", msg = "角色非法" });
+                }
+
+                var memberDB = await db.Members.FindAsync(member.Id);
+                memberDB.Name = member.Name;
+                memberDB.NickName = member.NickName;
+                memberDB.Phone = member.Phone;
+                memberDB.Status = member.Status;
+                memberDB.MemOrg = new List<DataBase.MemOrg>();
+                memberDB.MemRole = new List<DataBase.MemRole>();
+                memberDB.Password = Helper.EncryptionHelper.SHA1(member.Password + memberDB.PasswordSalt, Encoding.UTF8, false);
+                db.MemOrg.RemoveRange(db.MemOrg.Where(mo=>mo.Member == member.Id));
+                db.MemRole.RemoveRange(db.MemRole.Where(mr => mr.Member == member.Id));
+                foreach (Guid org in member.Orgs)
+                {
+                    memberDB.MemOrg.Add(new DataBase.MemOrg { Member = memberDB.Id, Org = org });
+                }
+                foreach (Guid role in member.Roles)
+                {
+                    memberDB.MemRole.Add(new DataBase.MemRole { Member = memberDB.Id, Role = role });
+                }
+                db.Entry(memberDB).State = System.Data.Entity.EntityState.Modified;
+                try
+                {
+                    await db.SaveChangesAsync();
+                    return Json(new { status = "success", msg = "修改成功" });
+                }
+                catch (Exception ex)
+                {
+                    Helper.LogHelper.WriteErrorLog(ex);
+                    return Json(new { status = "fail", msg = "服务器内部错误" });
+                }
+            }
+            else
+            {
+                return Json(new { status = "fail", msg = "请求参数错误" });
+            }
+        }
+
+        /// <summary>
+        /// 更新账户状态
+        /// </summary>
+        /// <param name="member"></param>
+        /// <returns></returns>
+        [HttpPut]
+        public async Task<IHttpActionResult> UpdateMemberStatus(ReqMem.MemberStatus member)
+        {
+            if (ModelState.IsValid)
+            {
+                Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
+                var powerOrgs = Factory.OrgFactory.GetPowerOrgs(userId, Models.Config.Status.normal, db);
+                var filterMemberIds = db.MemOrg.Where(mo => powerOrgs.Contains(mo.Org)).Select(mo => mo.Member).ToList();
+                if (member.Id == null || !filterMemberIds.Contains(member.Id))
+                {
+                    return Json(new { status = "fail", msg = "账户不存在或非法" });
+                }
+                var memberDB = await db.Members.FindAsync(member.Id);
+                memberDB.Status = member.Status;
+                db.Entry(memberDB).State = System.Data.Entity.EntityState.Modified;
+                try
+                {
+                    await db.SaveChangesAsync();
+                    return Json(new { status = "success", msg = "修改成功" });
+                }
+                catch (Exception ex)
+                {
+                    Helper.LogHelper.WriteErrorLog(ex);
+                    return Json(new { status = "fail", msg = "服务器内部错误" });
+                }
+            }
+            else
+            {
+                return Json(new { status = "fail", msg = "请求参数错误" });
+            }
+        }
+        
+        
+        /// <summary>
+        /// 检索+分页查找用户
+        /// </summary>
+        /// <param name="query"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public IHttpActionResult ListMembers(ReqMem.ListMember query)
+        {
+            if (ModelState.IsValid)
+            {
+                Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
+                var powerOrgs = Factory.OrgFactory.GetPowerOrgs(userId, Models.Config.Status.normal, db);
+                if (query.Org != null && !powerOrgs.Contains((Guid)query.Org))
+                {
+                    return Json(new { status = "fail", msg = "部门非法" });
+                }
+                var powerRoles = db.Roles.Where(r => r.Status == Models.Config.Status.normal && powerOrgs.Contains(r.Org)).Select(r => r.Id);
+                if (query.Role != null && !powerRoles.Contains((Guid)query.Role))
+                {
+                    return Json(new { status = "fail", msg = "角色非法" });
+                }
+                var filterMemberIds = db.MemOrg.Where(mo => powerOrgs.Contains(mo.Org)).Select(mo => mo.Member).ToList();
+
+                if (query.Org != null || query.Role != null)
+                {
+                    //首先得到权限下的所有用户
+                    var allMembers = db.MemOrg.Where(mo => powerOrgs.Contains(mo.Org)).Join(db.MemRole, mo => mo.Member, mr => mr.Member, (mo, mr) => new { mo.Member, mo.Org, mr.Role });
+                    if (query.Org != null)
+                    {
+                        //筛选所选部门
+                        allMembers = allMembers.Where(ml => ml.Org == query.Org);
+                    }
+                    if (query.Role != null)
+                    {
+                        //筛选所选角色
+                        allMembers = allMembers.Where(ml => ml.Role == query.Role);
+                    }
+                    filterMemberIds = allMembers.Select(ml => ml.Member).ToList();
+                }
+                var members = db.Members.Where(m => m.Status != Models.Config.Status.deleted && filterMemberIds.Contains(m.Id));
+                if (!string.IsNullOrWhiteSpace(query.Name))
+                {
+                    //筛选用户名
+                    members = members.Where(m => m.Name == query.Name);
+                }
+                if (query.Phone != null)
+                {
+                    //筛选手机号
+                    members = members.Where(m => m.Phone == query.Phone);
+                }
+                var source = members.Select(m => new ResMember.Member
+                {
+                    Id = m.Id,
+                    Name = m.Name,
+                    Phone = m.Phone,
+                    NickName = m.NickName,
+                    Status = m.Status,
+                    Roles = db.MemRole.Where(mr => mr.Member == m.Id && mr.Roles.Status == Models.Config.Status.normal).Select(mr => new ResMember.IdName{ Id = mr.Role, Name = mr.Roles.Name }).ToList(),
+                    Orgs = db.MemOrg.Where(mo => mo.Member == m.Id && mo.Orgs.Status == Models.Config.Status.normal).Select(mr => new ResMember.IdName { Id = mr.Org,Name = mr.Orgs.Name }).ToList()
+
+                }).OrderBy(m=>m.Status);
+                var pagination = Helper.PaginationHelper<ResMember.Member>.Paging(source, query.PageIndex, query.PageSize);
+                if(pagination == null)
+                {
+                    return Json(new { status = "fail", msg = "查询为空" });
+                }
+                return Json(new { status = "success", msg = "获取成功", content = new { data = pagination,total = pagination.Total} });
+            }
+            else
+            {
+                return Json(new { status = "fail", msg = "请求参数错误" });
+            }
 
         }
     }

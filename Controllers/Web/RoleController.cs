@@ -46,25 +46,38 @@ namespace WebApi.Controllers.Web
         [HttpGet]
         public IHttpActionResult GetRoleTree()
         {
-            Guid userId = Guid.Parse(HttpContext.Current.Request.Headers["sessionId"]);
+            Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
+
             try
             {
-                var roleIds = db.MemOrg.Where(mo => mo.Member == userId).Select(mo => mo.Org).ToList();
-                var roles = db.Roles.Where(r => r.Status == Models.Config.Status.normal && (roleIds.Contains(r.Id) || roleIds.Contains(r.PId))).OrderBy(r=>r.OrderNum).Select(o => new RoleRes.Role
+                var orgs = Factory.OrgFactory.GetPowerOrgs(userId,Models.Config.Status.normal,db);
+                if(orgs.Count() == 0)
+                {
+                    return Json(new { status ="fail",msg="部门为空"});
+                }
+                var orgRoles = db.Roles.Where(r => r.Status == Models.Config.Status.normal && orgs.Contains(r.Org)).OrderBy(r=>r.OrderNum).Select(o => new RoleRes.Role
                 {
                     Id = o.Id,
                     PId = o.PId,
                     Name = o.Name,
                     OrderNum = o.OrderNum,
-                });
-                List<RoleRes.RoleTree> orgTrees = new List<RoleRes.RoleTree>();
+                }).ToList();
+                var memberRoles = db.MemRole.Where(mr => mr.Roles.Status == Models.Config.Status.normal && mr.Member == userId).OrderBy(mr => mr.Roles.OrderNum).Select(mr => new RoleRes.Role
+                {
+                    Id = mr.Roles.Id,
+                    PId = mr.Roles.PId,
+                    Name = mr.Roles.Name,
+                    OrderNum = mr.Roles.OrderNum,
+                }).ToList();
+                var roleIds = memberRoles.Select(r => r.Id).ToList();
+                List<RoleRes.RoleTree> roleTrees = new List<RoleRes.RoleTree>();
                 foreach (Guid role in roleIds)
                 {
                     var rolesTemp = new List<RoleRes.Role>();
-                    rolesTemp.AddRange(roles);
-                    orgTrees.Add(RoleTreeHelper(role, rolesTemp));
+                    rolesTemp.AddRange(orgRoles);
+                    roleTrees.Add(RoleTreeHelper(role, rolesTemp));
                 }
-                return Json(new { status = "success", msg = "获取成功", content = orgTrees });
+                return Json(new { status = "success", msg = "获取成功", content = roleTrees });
             }
             catch (Exception ex)
             {
@@ -247,10 +260,7 @@ namespace WebApi.Controllers.Web
         {
             if (ModelState.IsValid)
             {
-                if (role.Status > Models.Config.Status.forbidden || role.Status < Models.Config.Status.deleted)
-                {
-                    return Json(new { status = "fail", msg = "状态错误" });
-                }
+               
                 Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
 
                 
@@ -331,10 +341,7 @@ namespace WebApi.Controllers.Web
         {
             if (ModelState.IsValid)
             {
-                if (roleStatus.Status > Models.Config.Status.forbidden || roleStatus.Status < Models.Config.Status.deleted)
-                {
-                    return Json(new { status = "fail", msg = "状态错误" });
-                }
+               
                 Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
 
                 DataBase.Roles roleDB = await db.Roles.FindAsync(roleStatus.Id);

@@ -40,8 +40,9 @@ namespace WebApi.Controllers.Web
             Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
             try
             {
-                var orgIds = db.MemOrg.Where(mo => mo.Member == userId && mo.Orgs.Status == Models.Config.Status.normal).OrderBy(mo => mo.Orgs.OrderNum).Select(mo => mo.Org).ToList();
-                var orgs = db.Orgs.Where(o => o.Status == Models.Config.Status.normal && (orgIds.Contains(o.Id) || orgIds.Contains(o.PId))).Select(o => new OrgRes.Org
+                var orgsAll = Factory.OrgFactory.GetPowerOrgs(userId,Models.Config.Status.normal,db);
+                var memberOrgs = db.MemOrg.Where(mo => mo.Member == userId && mo.Orgs.Status == Models.Config.Status.normal).Select(mo => mo.Org);
+                var orgs = db.Orgs.Where(o => o.Status == Models.Config.Status.normal && orgsAll.Contains(o.Id) ).Select(o => new OrgRes.Org
                 {
                     Id = o.Id,
                     PId = o.PId,
@@ -49,7 +50,7 @@ namespace WebApi.Controllers.Web
                     OrderNum = o.OrderNum,
                 });
                 List<OrgRes.OrgTree> orgTrees = new List<OrgRes.OrgTree>();
-                foreach (Guid org in orgIds)
+                foreach (Guid org in memberOrgs)
                 {
                     var orgsTemp = new List<OrgRes.Org>();
                     orgsTemp.AddRange(orgs);
@@ -93,7 +94,7 @@ namespace WebApi.Controllers.Web
                         o.Status,
                         o.OrderNum,
                         MemberCount = db.MemOrg.Where(mo2 => mo2.Org == o.Id).Select(mo2 => mo2.Member).Intersect(db.Members.Where(mem => mem.Status == Models.Config.Status.normal).Select(mem => mem.Id)).Count(),
-                        MenuCount = db.OrgMenu.Where(om => om.Org == o.Id).Select(om => om.Menu).Intersect(db.Menus.Where(menu => menu.Status == Models.Config.Status.normal).Select(menu => menu.Id)).Count(),
+                        //MenuCount = db.OrgMenu.Where(om => om.Org == o.Id).Select(om => om.Menu).Intersect(db.Menus.Where(menu => menu.Status == Models.Config.Status.normal).Select(menu => menu.Id)).Count(),
                         RoleCount = db.Roles.Where(role => role.Org == o.Id && role.Status == Models.Config.Status.normal).Count(),
                         HasChildren = db.Orgs.Where(org => org.PId == o.Id && org.Status != Models.Config.Status.deleted).Any()
                     });
@@ -118,7 +119,7 @@ namespace WebApi.Controllers.Web
                         o.OrderNum,
                         //只统计正常的
                         MemberCount = db.MemOrg.Where(mo2 => mo2.Org == o.Id).Select(mo2 => mo2.Member).Intersect(db.Members.Where(mem => mem.Status == Models.Config.Status.normal).Select(mem => mem.Id)).Count(),
-                        MenuCount = db.OrgMenu.Where(om => om.Org == o.Id).Select(om => om.Menu).Intersect(db.Menus.Where(menu => menu.Status == Models.Config.Status.normal).Select(menu => menu.Id)).Count(),
+                        //MenuCount = db.OrgMenu.Where(om => om.Org == o.Id).Select(om => om.Menu).Intersect(db.Menus.Where(menu => menu.Status == Models.Config.Status.normal).Select(menu => menu.Id)).Count(),
                         RoleCount = db.Roles.Where(role => role.Org == o.Id && role.Status == Models.Config.Status.normal).Count(),
                         HasChildren = db.Orgs.Where(org => org.PId == o.Id && org.Status != Models.Config.Status.deleted).Any()
                     });
@@ -256,10 +257,6 @@ namespace WebApi.Controllers.Web
         {
             if (ModelState.IsValid)
             {
-                if (orgStatus.Status > Models.Config.Status.forbidden || orgStatus.Status < Models.Config.Status.deleted)
-                {
-                    return Json(new { status = "fail", msg = "状态错误" });
-                }
                 Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
 
                 List<Guid> powerOrgs = Factory.OrgFactory.GetPowerOrgs(userId, Models.Config.Status.deleted, db);

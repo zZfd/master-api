@@ -17,6 +17,8 @@ namespace WebApi.Models.Request.Web.Org
        
 
         [Required(ErrorMessage = "请选择部门状态")]
+        [Range(minimum: Models.Config.Status.deleted, maximum: Models.Config.Status.forbidden)]
+
         public short Status { get; set; }
         [Required(ErrorMessage = "请进行排序")]
         public short OrderNum { get; set; }
@@ -31,6 +33,8 @@ namespace WebApi.Models.Request.Web.Org
         [Required(ErrorMessage = "请选择部门")]
         public Guid Id { get; set; }
         [Required(ErrorMessage = "请选择状态")]
+        [Range(minimum: Models.Config.Status.deleted, maximum: Models.Config.Status.forbidden)]
+
         public short Status { get; set; }
     }
 }

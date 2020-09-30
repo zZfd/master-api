@@ -52,7 +52,7 @@ namespace Helper
         /// <returns></returns>
         public static PaginationHelper<T> Paging(IQueryable<T> source, int pi = 1, int ps = 10)
         {
-            if (source.Count() > 0)
+            if (source.Any())
             {
                 List<T> result = source.Skip((pi - 1) * ps).Take(ps).ToList();
                 return new PaginationHelper<T>(result, source.Count(), pi, ps);

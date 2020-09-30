@@ -45,10 +45,6 @@ namespace WebApi.Controllers.Web
                 {
                     return Json(new { status = "fail", msg = "不能添加根节点" });
                 }
-                if (menu.Status > Models.Config.Status.forbidden || menu.Status < Models.Config.Status.deleted)
-                {
-                    return Json(new { status = "fail", msg = "状态错误" });
-                }
 
                 DataBase.Menus menuDB = new DataBase.Menus
                 {
@@ -94,10 +90,7 @@ namespace WebApi.Controllers.Web
         {
             if (ModelState.IsValid)
             {
-                if (menu.Status > Models.Config.Status.forbidden || menu.Status < Models.Config.Status.deleted)
-                {
-                    return Json(new { status = "fail", msg = "状态错误" });
-                }
+               
                 Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
                 var menuIds = (from mr in db.MemRole
                                where mr.Member == userId
@@ -150,10 +143,6 @@ namespace WebApi.Controllers.Web
         {
             if (ModelState.IsValid)
             {
-                if (menuStatus.Status > Models.Config.Status.forbidden || menuStatus.Status < Models.Config.Status.deleted)
-                {
-                    return Json(new { status = "fail", msg = "状态错误" });
-                }
                 Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
                 var menuIds = (from mr in db.MemRole
                                where mr.Member == userId

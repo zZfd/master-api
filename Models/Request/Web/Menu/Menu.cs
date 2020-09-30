@@ -28,6 +28,7 @@ namespace WebApi.Models.Request.Web.Menu
 
         public short OrderNum { get; set; }
         [Required(ErrorMessage = "请选择菜单状态")]
+        [Range(minimum: Models.Config.Status.deleted, maximum: Models.Config.Status.forbidden)]
 
         public short Status { get; set; }
     }
@@ -36,6 +37,7 @@ namespace WebApi.Models.Request.Web.Menu
         [Required(ErrorMessage = "请选择菜单")]
         public Guid Id { get; set; }
         [Required(ErrorMessage = "请选择状态")]
+        [Range(minimum: Models.Config.Status.deleted, maximum: Models.Config.Status.forbidden)]
         public short Status { get; set; }
     }
 }

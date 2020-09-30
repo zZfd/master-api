@@ -14,6 +14,8 @@ namespace WebApi.Models.Request.Web.Role
         [Required(ErrorMessage = "请输入角色名称")]
         public string Name { get; set; }
         [Required(ErrorMessage = "请选择角色状态")]
+        [Range(minimum: Models.Config.Status.deleted, maximum: Models.Config.Status.forbidden)]
+
         public short Status { get; set; }
         [Required(ErrorMessage = "请进行排序")]
         public short OrderNum { get; set; }
@@ -30,6 +32,8 @@ namespace WebApi.Models.Request.Web.Role
         [Required(ErrorMessage = "请选择角色")]
         public Guid Id { get; set; }
         [Required(ErrorMessage = "请选择状态")]
+        [Range(minimum: Models.Config.Status.deleted, maximum: Models.Config.Status.forbidden)]
+
         public short Status { get; set; }
     }
 }
