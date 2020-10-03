@@ -2,15 +2,13 @@
 using System.Collections.Generic;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
-using OrgReq = WebApi.Models.Request.Web.Org;
-using OrgRes = WebApi.Models.Response.Web.Org;
+using ReqManage = WebApi.Models.Request.Manage;
+using ResManage = WebApi.Models.Response.Manage;
 
-namespace WebApi.Controllers.Web
+namespace WebApi.Controllers.Manage
 {
     public class OrgController : ApiController
     {
@@ -42,17 +40,17 @@ namespace WebApi.Controllers.Web
             {
                 var orgsAll = Factory.OrgFactory.GetPowerOrgs(userId,Models.Config.Status.normal,db);
                 var memberOrgs = db.MemOrg.Where(mo => mo.Member == userId && mo.Orgs.Status == Models.Config.Status.normal).Select(mo => mo.Org);
-                var orgs = db.Orgs.Where(o => o.Status == Models.Config.Status.normal && orgsAll.Contains(o.Id) ).Select(o => new OrgRes.Org
+                var orgs = db.Orgs.Where(o => o.Status == Models.Config.Status.normal && orgsAll.Contains(o.Id) ).Select(o => new ResManage.Org
                 {
                     Id = o.Id,
                     PId = o.PId,
                     Name = o.Name,
                     OrderNum = o.OrderNum,
                 });
-                List<OrgRes.OrgTree> orgTrees = new List<OrgRes.OrgTree>();
+                List<ResManage.OrgTree> orgTrees = new List<ResManage.OrgTree>();
                 foreach (Guid org in memberOrgs)
                 {
-                    var orgsTemp = new List<OrgRes.Org>();
+                    var orgsTemp = new List<ResManage.Org>();
                     orgsTemp.AddRange(orgs);
                     orgTrees.Add(OrgTreeHelper(org, orgsTemp));
                 }
@@ -139,7 +137,7 @@ namespace WebApi.Controllers.Web
         /// <param name="org"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<IHttpActionResult> SaveOrg(OrgReq.Org org)
+        public async Task<IHttpActionResult> SaveOrg(ReqManage.Org org)
         {
             if (ModelState.IsValid)
             {
@@ -198,7 +196,7 @@ namespace WebApi.Controllers.Web
         /// <param name="org"></param>
         /// <returns></returns>
         [HttpPut]
-        public async Task<IHttpActionResult> UpdateOrg(OrgReq.Org org)
+        public async Task<IHttpActionResult> UpdateOrg(ReqManage.Org org)
         {
             if (ModelState.IsValid)
             {
@@ -253,7 +251,7 @@ namespace WebApi.Controllers.Web
         /// <param name="orgStatus"></param>
         /// <returns></returns>
         [HttpPut]
-        public async Task<IHttpActionResult> UpdateOrgStatus(OrgReq.OrgStatus orgStatus)
+        public async Task<IHttpActionResult> UpdateOrgStatus(ReqManage.OrgStatus orgStatus)
         {
             if (ModelState.IsValid)
             {
@@ -301,7 +299,7 @@ namespace WebApi.Controllers.Web
         /// <param name="pId"></param>
         /// <param name="orgs"></param>
         /// <returns></returns>
-        private OrgRes.OrgTree OrgTreeHelper(Guid pId, List<OrgRes.Org> orgs)
+        private ResManage.OrgTree OrgTreeHelper(Guid pId, List<ResManage.Org> orgs)
         {
             if (orgs == null || orgs.Count() == 0)
             {
@@ -310,14 +308,14 @@ namespace WebApi.Controllers.Web
             var org = orgs.Where(m => m.Id == pId).First();
             var children = orgs.Where(o => o.PId == pId).OrderBy(o => o.OrderNum).ToList();
             orgs.Remove(org);
-            var child = new OrgRes.OrgTree
+            var child = new ResManage.OrgTree
             {
                 Id = org.Id,
                 Name = org.Name,
             };
             if (children.Any())
             {
-                child.Children = new List<OrgRes.OrgTree>();
+                child.Children = new List<ResManage.OrgTree>();
                 foreach (var item in children)
                 {
                     child.Children.Add(OrgTreeHelper(item.Id, orgs));

@@ -157,29 +157,33 @@
     <Compile Include="App_Start\NamespaceSelector.cs" />
     <Compile Include="App_Start\SwaggerConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
-    <Compile Include="Controllers\Web\FootballTeamController.cs" />
-    <Compile Include="Controllers\Web\MemberController.cs" />
-    <Compile Include="Controllers\Web\MenuController.cs" />
-    <Compile Include="Controllers\Web\OrgController.cs" />
-    <Compile Include="Controllers\Web\RoleController.cs" />
+    <Compile Include="Controllers\Football\PlayerController.cs" />
+    <Compile Include="Controllers\Football\TeamController.cs" />
+    <Compile Include="Controllers\Manage\MemberController.cs" />
+    <Compile Include="Controllers\Manage\MenuController.cs" />
+    <Compile Include="Controllers\Manage\OrgController.cs" />
+    <Compile Include="Controllers\Manage\RoleController.cs" />
     <Compile Include="Factory\OrgFactory.cs" />
+    <Compile Include="Factory\TeamFactory.cs" />
     <Compile Include="Filter\AuthorityFilter.cs" />
     <Compile Include="Filter\WebApiProfilingActionFilter.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\Config\Settings.cs" />
+    <Compile Include="Models\Request\Common\UpdateStatus.cs" />
     <Compile Include="Models\Request\Setting.cs" />
-    <Compile Include="Models\Request\Web\Member\Member.cs" />
-    <Compile Include="Models\Request\Web\Menu\Menu.cs" />
-    <Compile Include="Models\Request\Web\Org\Org.cs" />
-    <Compile Include="Models\Request\Web\Role\Role.cs" />
+    <Compile Include="Models\Request\Football\Team.cs" />
+    <Compile Include="Models\Request\Manage\Member.cs" />
+    <Compile Include="Models\Request\Manage\Menu.cs" />
+    <Compile Include="Models\Request\Manage\Org.cs" />
+    <Compile Include="Models\Request\Manage\Role.cs" />
     <Compile Include="Models\Response\Mini\Menu\MenuTree.cs" />
-    <Compile Include="Models\Response\Response.cs" />
-    <Compile Include="Models\Response\Web\Member\Member.cs" />
-    <Compile Include="Models\Response\Web\Menu\Menu.cs" />
-    <Compile Include="Models\Response\Web\Org\Org.cs" />
-    <Compile Include="Models\Response\Web\Role\Role.cs" />
+    <Compile Include="Models\Response\Football\Team.cs" />
+    <Compile Include="Models\Response\Manage\Member.cs" />
+    <Compile Include="Models\Response\Manage\Menu.cs" />
+    <Compile Include="Models\Response\Manage\Org.cs" />
+    <Compile Include="Models\Response\Manage\Role.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -122,6 +122,11 @@
   <ItemGroup>
     <Compile Include="Attachments.cs" />
     <Compile Include="DB.cs" />
+    <Compile Include="FT_Bet.cs" />
+    <Compile Include="FT_Match.cs" />
+    <Compile Include="FT_Player.cs" />
+    <Compile Include="FT_Score.cs" />
+    <Compile Include="FT_Team.cs" />
     <Compile Include="Logs.cs" />
     <Compile Include="Members.cs" />
     <Compile Include="MemOrg.cs" />

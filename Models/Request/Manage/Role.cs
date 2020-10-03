@@ -4,33 +4,32 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Web;
 
-namespace WebApi.Models.Request.Web.Org
+namespace WebApi.Models.Request.Manage
 {
-    public class Org
+    public class Role
     {
         public Guid? Id { get; set; }
-        [Required(ErrorMessage = "请选择父级部门")]
+        [Required(ErrorMessage = "请选择父级角色")]
         public Guid PId { get; set; }
-        [Required(ErrorMessage = "请输入部门名称")]
+        [Required(ErrorMessage = "请输入角色名称")]
         public string Name { get; set; }
-
-       
-
-        [Required(ErrorMessage = "请选择部门状态")]
+        [Required(ErrorMessage = "请选择角色状态")]
         [Range(minimum: Models.Config.Status.deleted, maximum: Models.Config.Status.forbidden)]
 
         public short Status { get; set; }
         [Required(ErrorMessage = "请进行排序")]
         public short OrderNum { get; set; }
+        [Required(ErrorMessage = "请选择部门")]
+        public Guid Org { get; set; }
         //菜单
-        //[Required(ErrorMessage = "请选择部门菜单")]
-        //public List<Guid> Menus { get; set; }
+        [Required(ErrorMessage = "请选择角色菜单")]
+        public List<Guid> Menus { get; set; }
         public string Code { get; set; }
         public string Icon { get; set; }
     }
-    public class OrgStatus
+    public class RoleStatus
     {
-        [Required(ErrorMessage = "请选择部门")]
+        [Required(ErrorMessage = "请选择角色")]
         public Guid Id { get; set; }
         [Required(ErrorMessage = "请选择状态")]
         [Range(minimum: Models.Config.Status.deleted, maximum: Models.Config.Status.forbidden)]

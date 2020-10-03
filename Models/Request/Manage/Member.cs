@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Web;
 
-namespace WebApi.Models.Request.Web.Member
+namespace WebApi.Models.Request.Manage
 {
     public class Login
     {

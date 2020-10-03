@@ -1,16 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
 using System.Web;
 using System.Web.Http;
-using MenuRes = WebApi.Models.Response.Web.Menu;
-using MenuReq = WebApi.Models.Request.Web.Menu;
+using ResManage = WebApi.Models.Response.Manage;
+using ReqManage = WebApi.Models.Request.Manage;
 using System.Threading.Tasks;
-using System.Data.Entity.Infrastructure;
 
-namespace WebApi.Controllers.Web
+namespace WebApi.Controllers.Manage
 {
     public class MenuController : ApiController
     {
@@ -23,7 +20,7 @@ namespace WebApi.Controllers.Web
         /// <param name="menu"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<IHttpActionResult> SaveMenu(MenuReq.Menu menu)
+        public async Task<IHttpActionResult> SaveMenu(ReqManage.Menu menu)
         {
             if (ModelState.IsValid)
             {
@@ -86,7 +83,7 @@ namespace WebApi.Controllers.Web
         /// <param name="menu"></param>
         /// <returns></returns>
         [HttpPut]
-        public async Task<IHttpActionResult> UpdateMenu(MenuReq.Menu menu)
+        public async Task<IHttpActionResult> UpdateMenu(ReqManage.Menu menu)
         {
             if (ModelState.IsValid)
             {
@@ -139,7 +136,7 @@ namespace WebApi.Controllers.Web
         /// <param name="menuStatus"></param>
         /// <returns></returns>
         [HttpPut]
-        public async Task<IHttpActionResult> UpdateMenuStatus(MenuReq.MenuStatus menuStatus)
+        public async Task<IHttpActionResult> UpdateMenuStatus(ReqManage.MenuStatus menuStatus)
         {
             if (ModelState.IsValid)
             {
@@ -210,7 +207,7 @@ namespace WebApi.Controllers.Web
                 {
                     //第一次加载
                     //根据用户角色查找所有的分支menu
-                    var menuPIds = db.Menus.Where(m => menuIds.Contains(m.Id) && !menuIds.Contains(m.PId)).OrderBy(m => m.OrderNum).Select(m => new MenuRes.Menu
+                    var menuPIds = db.Menus.Where(m => menuIds.Contains(m.Id) && !menuIds.Contains(m.PId)).OrderBy(m => m.OrderNum).Select(m => new ResManage.Menu
                     {
                         Id = m.Id,
                         PId = m.PId,
@@ -241,7 +238,7 @@ namespace WebApi.Controllers.Web
                     var content = from m in db.Menus
                                   where m.PId == pId && menuIds.Contains(m.Id) && m.Status != Models.Config.Status.deleted
                                   orderby m.OrderNum
-                                  select new MenuRes.Menu
+                                  select new ResManage.Menu
                                   {
                                       Id = m.Id,
                                       PId = m.PId,
@@ -294,7 +291,7 @@ namespace WebApi.Controllers.Web
             var menus = (from m in db.Menus
                          where menuIds.Contains(m.Id) && m.Status == Models.Config.Status.normal
                          orderby m.OrderNum
-                         select new MenuRes.Menu
+                         select new ResManage.Menu
                          {
                              Id = m.Id,
                              PId = m.PId,
@@ -333,7 +330,7 @@ namespace WebApi.Controllers.Web
             var menus = (from m in db.Menus
                          where menuIds.Contains(m.Id) && m.Status == Models.Config.Status.normal
                          orderby m.OrderNum
-                         select new MenuRes.Menu
+                         select new ResManage.Menu
                          {
                              Id = m.Id,
                              PId = m.PId,
@@ -345,13 +342,13 @@ namespace WebApi.Controllers.Web
                          }).ToList();
             var menuIdArr = menus.Select(m => m.Id).ToList();
 
-            List<MenuRes.MenuTree> menuTrees = new List<MenuRes.MenuTree>();
+            List<ResManage.MenuTree> menuTrees = new List<ResManage.MenuTree>();
             foreach (var menu in menus)
             {
                 if (!menuIdArr.Contains(menu.PId))
                 {
                     //以分支节点，创建菜单树
-                    var menusTemp = new List<MenuRes.Menu>();
+                    var menusTemp = new List<ResManage.Menu>();
                     menusTemp.AddRange(menus);
                     menuTrees.Add(MenuTreeHelper(menu.Id, menusTemp));
                 }
@@ -381,7 +378,7 @@ namespace WebApi.Controllers.Web
             }
             var menus = (from m in db.Menus
                          where m.Status == Models.Config.Status.normal && menuIds.Contains(m.Id)
-                         select new MenuRes.Menu
+                         select new ResManage.Menu
                          {
                              Id = m.Id,
                              PId = m.PId,
@@ -393,13 +390,13 @@ namespace WebApi.Controllers.Web
                          }).ToList();
             var menuIdArr = menus.Select(m => m.Id).ToList();
 
-            List<MenuRes.MenuTree> menuTrees = new List<MenuRes.MenuTree>();
+            List<ResManage.MenuTree> menuTrees = new List<ResManage.MenuTree>();
             foreach (var menu in menus)
             {
                 if (!menuIdArr.Contains(menu.PId))
                 {
                     //以分支节点，创建菜单树
-                    var menusTemp = new List<MenuRes.Menu>();
+                    var menusTemp = new List<ResManage.Menu>();
                     menusTemp.AddRange(menus);
                     menuTrees.Add(MenuTreeHelper(menu.Id, menusTemp));
                 }
@@ -432,7 +429,7 @@ namespace WebApi.Controllers.Web
                          where menuIds.Contains(m.Id) && m.Status == Models.Config.Status.normal 
                          && m.Type != Models.Config.MenuType.button && m.Type != Models.Config.MenuType.root
                          orderby m.OrderNum
-                         select new MenuRes.Menu
+                         select new ResManage.Menu
                          {
                              Id = m.Id,
                              PId = m.PId,
@@ -444,13 +441,13 @@ namespace WebApi.Controllers.Web
                          }).ToList();
             var menuIdArr = menus.Select(m => m.Id).ToList();
 
-            List<MenuRes.MenuTree> routerTrees = new List<MenuRes.MenuTree>();
+            List<ResManage.MenuTree> routerTrees = new List<ResManage.MenuTree>();
             foreach (var menu in menus)
             {
                 if (!menuIdArr.Contains(menu.PId))
                 {
                     //以分支节点，创建菜单树
-                    var menusTemp = new List<MenuRes.Menu>();
+                    var menusTemp = new List<ResManage.Menu>();
                     menusTemp.AddRange(menus);
                     routerTrees.Add(MenuTreeHelper(menu.Id, menusTemp));
                 }
@@ -481,7 +478,7 @@ namespace WebApi.Controllers.Web
         //    }
         //    var menus = (from m in db.Menus
         //                 where menuIds.Contains(m.Id) && m.Status == Models.Config.Status.normal && m.Type != "BUTTON"
-        //                 select new MenuRes.Menu
+        //                 select new ResManage.Menu
         //                 {
         //                     Id = m.Id,
         //                     PId = m.PId,
@@ -493,13 +490,13 @@ namespace WebApi.Controllers.Web
         //                 }).ToList();
         //    var menuIdArr = menus.Select(m => m.Id).ToList();
 
-        //    List<MenuRes.MenuTree> routerTrees = new List<MenuRes.MenuTree>();
+        //    List<ResManage.MenuTree> routerTrees = new List<ResManage.MenuTree>();
         //    foreach (var menu in menus)
         //    {
         //        if (!menuIdArr.Contains(menu.PId))
         //        {
         //            //以分支节点，创建菜单树
-        //            var menusTemp = new List<MenuRes.Menu>();
+        //            var menusTemp = new List<ResManage.Menu>();
         //            menusTemp.AddRange(menus);
         //            routerTrees.Add(MenuTreeHelper(menu.Id, menusTemp));
         //        }
@@ -513,7 +510,7 @@ namespace WebApi.Controllers.Web
         /// <param name="pId">总根节点</param>
         /// <param name="menus">Id,PId,Name,Controller,Action,Icon,OrderNum</param>
         /// <returns></returns>
-        private MenuRes.MenuTree MenuTreeHelper(Guid pId, List<MenuRes.Menu> menus)
+        private ResManage.MenuTree MenuTreeHelper(Guid pId, List<ResManage.Menu> menus)
         {
             if (menus == null || menus.Count() == 0)
             {
@@ -522,7 +519,7 @@ namespace WebApi.Controllers.Web
             var menu = menus.Where(m => m.Id == pId).First();
             var children = menus.Where(m => m.PId == pId).OrderBy(m => m.OrderNum).ToList();
             menus.Remove(menu);
-            var child = new MenuRes.MenuTree
+            var child = new ResManage.MenuTree
             {
                 Id = menu.Id,
                 Name = menu.Name,
@@ -533,7 +530,7 @@ namespace WebApi.Controllers.Web
             };
             if (children.Any())
             {
-                child.Children = new List<MenuRes.MenuTree>();
+                child.Children = new List<ResManage.MenuTree>();
                 foreach (var item in children)
                 {
                     child.Children.Add(MenuTreeHelper(item.Id, menus));

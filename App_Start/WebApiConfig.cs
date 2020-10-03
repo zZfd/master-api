@@ -46,12 +46,21 @@ namespace WebApi
             //    }
             //    );
             config.Routes.MapHttpRoute(
-                name: "WebApi",
-                routeTemplate: "api/web/{controller}/{action}/{id}",
+                name: "ManageApi",
+                routeTemplate: "api/manage/{controller}/{action}/{id}",
                 defaults: new
                 {
                     id = RouteParameter.Optional,
-                    namespaces = new[] { "WebApi.Controllers.Web" }
+                    namespaces = new[] { "WebApi.Controllers.Manage" }
+                }
+                );
+            config.Routes.MapHttpRoute(
+                name: "FootballApi",
+                routeTemplate: "api/football/{controller}/{action}/{id}",
+                defaults: new
+                {
+                    id = RouteParameter.Optional,
+                    namespaces = new[] { "WebApi.Controllers.Football" }
                 }
                 );
         }

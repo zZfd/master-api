@@ -38,7 +38,7 @@ namespace WebApi.Factory
                 //只包含正常
                 foreach (var org in source)
                 {
-                    var s = db.Orgs.Where(o => o.PId == org.Id && o.Status == status).Select(o => new OrgRes.Org
+                    var s = db.Orgs.Where(o => o.PId == org.Id && o.Status == status).OrderBy(o=>o.OrderNum).Select(o => new OrgRes.Org
                     {
                         Id = o.Id,
                         PId = o.PId
@@ -51,7 +51,7 @@ namespace WebApi.Factory
                 //不包含已删除
                 foreach (var org in source)
                 {
-                    var s = db.Orgs.Where(o => o.PId == org.Id && o.Status != Models.Config.Status.deleted).Select(o => new OrgRes.Org
+                    var s = db.Orgs.Where(o => o.PId == org.Id && o.Status != Models.Config.Status.deleted).OrderBy(o => o.OrderNum).Select(o => new OrgRes.Org
                     {
                         Id = o.Id,
                         PId = o.PId

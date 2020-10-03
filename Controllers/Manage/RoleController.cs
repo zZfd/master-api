@@ -2,15 +2,13 @@
 using System.Collections.Generic;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
-using RoleReq = WebApi.Models.Request.Web.Role;
-using RoleRes = WebApi.Models.Response.Web.Role;
+using ReqManage = WebApi.Models.Request.Manage;
+using ResManage = WebApi.Models.Response.Manage;
 
-namespace WebApi.Controllers.Web
+namespace WebApi.Controllers.Manage
 {
     public class RoleController : ApiController
     {
@@ -55,14 +53,14 @@ namespace WebApi.Controllers.Web
                 {
                     return Json(new { status ="fail",msg="部门为空"});
                 }
-                var orgRoles = db.Roles.Where(r => r.Status == Models.Config.Status.normal && orgs.Contains(r.Org)).OrderBy(r=>r.OrderNum).Select(o => new RoleRes.Role
+                var orgRoles = db.Roles.Where(r => r.Status == Models.Config.Status.normal && orgs.Contains(r.Org)).OrderBy(r=>r.OrderNum).Select(o => new ResManage.Role
                 {
                     Id = o.Id,
                     PId = o.PId,
                     Name = o.Name,
                     OrderNum = o.OrderNum,
                 }).ToList();
-                var memberRoles = db.MemRole.Where(mr => mr.Roles.Status == Models.Config.Status.normal && mr.Member == userId).OrderBy(mr => mr.Roles.OrderNum).Select(mr => new RoleRes.Role
+                var memberRoles = db.MemRole.Where(mr => mr.Roles.Status == Models.Config.Status.normal && mr.Member == userId).OrderBy(mr => mr.Roles.OrderNum).Select(mr => new ResManage.Role
                 {
                     Id = mr.Roles.Id,
                     PId = mr.Roles.PId,
@@ -70,10 +68,10 @@ namespace WebApi.Controllers.Web
                     OrderNum = mr.Roles.OrderNum,
                 }).ToList();
                 var roleIds = memberRoles.Select(r => r.Id).ToList();
-                List<RoleRes.RoleTree> roleTrees = new List<RoleRes.RoleTree>();
+                List<ResManage.RoleTree> roleTrees = new List<ResManage.RoleTree>();
                 foreach (Guid role in roleIds)
                 {
-                    var rolesTemp = new List<RoleRes.Role>();
+                    var rolesTemp = new List<ResManage.Role>();
                     rolesTemp.AddRange(orgRoles);
                     roleTrees.Add(RoleTreeHelper(role, rolesTemp));
                 }
@@ -173,7 +171,7 @@ namespace WebApi.Controllers.Web
         /// <param name="role"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<IHttpActionResult> SaveRole(RoleReq.Role role)
+        public async Task<IHttpActionResult> SaveRole(ReqManage.Role role)
         {
             if (ModelState.IsValid)
             {
@@ -256,7 +254,7 @@ namespace WebApi.Controllers.Web
         /// <param name="role"></param>
         /// <returns></returns>
         [HttpPut]
-        public async Task<IHttpActionResult> UpdateRole(RoleReq.Role role)
+        public async Task<IHttpActionResult> UpdateRole(ReqManage.Role role)
         {
             if (ModelState.IsValid)
             {
@@ -337,7 +335,7 @@ namespace WebApi.Controllers.Web
         /// <param name="roleStatus"></param>
         /// <returns></returns>
         [HttpPut]
-        public async Task<IHttpActionResult> UpdateRoleStatus(RoleReq.RoleStatus roleStatus)
+        public async Task<IHttpActionResult> UpdateRoleStatus(ReqManage.RoleStatus roleStatus)
         {
             if (ModelState.IsValid)
             {
@@ -393,7 +391,7 @@ namespace WebApi.Controllers.Web
         /// <param name="pId"></param>
         /// <param name="roles"></param>
         /// <returns></returns>
-        private RoleRes.RoleTree RoleTreeHelper(Guid pId, List<RoleRes.Role> roles)
+        private ResManage.RoleTree RoleTreeHelper(Guid pId, List<ResManage.Role> roles)
         {
             if (roles == null || roles.Count() == 0)
             {
@@ -402,7 +400,7 @@ namespace WebApi.Controllers.Web
             var role = roles.Where(m => m.Id == pId).First();
             var children = roles.Where(o => o.PId == pId).OrderBy(o => o.OrderNum).ToList();
             roles.Remove(role);
-            var child = new RoleRes.RoleTree
+            var child = new ResManage.RoleTree
             {
                 Id = role.Id,
                 Name = role.Name,
@@ -410,7 +408,7 @@ namespace WebApi.Controllers.Web
             };
             if (children.Any())
             {
-                child.Children = new List<RoleRes.RoleTree>();
+                child.Children = new List<ResManage.RoleTree>();
                 foreach (var item in children)
                 {
                     child.Children.Add(RoleTreeHelper(item.Id, roles));

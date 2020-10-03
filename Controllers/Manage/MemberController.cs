@@ -2,17 +2,15 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
 using System.Web.Http;
-using ReqMem = WebApi.Models.Request.Web.Member;
+using ReqManage = WebApi.Models.Request.Manage;
 using WebApi.Models.Response;
 using System.Threading.Tasks;
 using System.Text;
 using System.Web;
-using ResMember = WebApi.Models.Response.Web.Member;
+using ResManage = WebApi.Models.Response.Manage;
 
-namespace WebApi.Controllers.Web
+namespace WebApi.Controllers.Manage
 {
     public class MemberController : ApiController
     {
@@ -35,7 +33,7 @@ namespace WebApi.Controllers.Web
         /// <param name="member"></param>
         /// <returns></returns>
         [HttpPost]
-        public IHttpActionResult Login(ReqMem.Login member)
+        public IHttpActionResult Login(ReqManage.Login member)
         {
             if (ModelState.IsValid)
             {
@@ -98,7 +96,7 @@ namespace WebApi.Controllers.Web
         /// <param name="member"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<IHttpActionResult> SaveMember(ReqMem.Member member)
+        public async Task<IHttpActionResult> SaveMember(ReqManage.Member member)
         {
             if (ModelState.IsValid)
             {
@@ -156,7 +154,7 @@ namespace WebApi.Controllers.Web
         /// <param name="member"></param>
         /// <returns></returns>
         [HttpPut]
-        public async Task<IHttpActionResult> UpdateMember(ReqMem.Member member)
+        public async Task<IHttpActionResult> UpdateMember(ReqManage.Member member)
         {
             if (ModelState.IsValid)
             {
@@ -219,7 +217,7 @@ namespace WebApi.Controllers.Web
         /// <param name="member"></param>
         /// <returns></returns>
         [HttpPut]
-        public async Task<IHttpActionResult> UpdateMemberStatus(ReqMem.MemberStatus member)
+        public async Task<IHttpActionResult> UpdateMemberStatus(ReqManage.MemberStatus member)
         {
             if (ModelState.IsValid)
             {
@@ -257,7 +255,7 @@ namespace WebApi.Controllers.Web
         /// <param name="query"></param>
         /// <returns></returns>
         [HttpPost]
-        public IHttpActionResult ListMembers(ReqMem.ListMember query)
+        public IHttpActionResult ListMembers(ReqManage.ListMember query)
         {
             if (ModelState.IsValid)
             {
@@ -301,18 +299,18 @@ namespace WebApi.Controllers.Web
                     //筛选手机号
                     members = members.Where(m => m.Phone == query.Phone);
                 }
-                var source = members.Select(m => new ResMember.Member
+                var source = members.Select(m => new ResManage.Member
                 {
                     Id = m.Id,
                     Name = m.Name,
                     Phone = m.Phone,
                     NickName = m.NickName,
                     Status = m.Status,
-                    Roles = db.MemRole.Where(mr => mr.Member == m.Id && mr.Roles.Status == Models.Config.Status.normal).Select(mr => new ResMember.IdName{ Id = mr.Role, Name = mr.Roles.Name }).ToList(),
-                    Orgs = db.MemOrg.Where(mo => mo.Member == m.Id && mo.Orgs.Status == Models.Config.Status.normal).Select(mr => new ResMember.IdName { Id = mr.Org,Name = mr.Orgs.Name }).ToList()
+                    Roles = db.MemRole.Where(mr => mr.Member == m.Id && mr.Roles.Status == Models.Config.Status.normal).Select(mr => new ResManage.IdName{ Id = mr.Role, Name = mr.Roles.Name }).ToList(),
+                    Orgs = db.MemOrg.Where(mo => mo.Member == m.Id && mo.Orgs.Status == Models.Config.Status.normal).Select(mr => new ResManage.IdName { Id = mr.Org,Name = mr.Orgs.Name }).ToList()
 
                 }).OrderBy(m=>m.Status);
-                var pagination = Helper.PaginationHelper<ResMember.Member>.Paging(source, query.PageIndex, query.PageSize);
+                var pagination = Helper.PaginationHelper<ResManage.Member>.Paging(source, query.PageIndex, query.PageSize);
                 if(pagination == null)
                 {
                     return Json(new { status = "fail", msg = "查询为空" });

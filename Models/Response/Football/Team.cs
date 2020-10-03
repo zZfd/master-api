@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-namespace WebApi.Models.Response.Web.Role
+namespace WebApi.Models.Response.Football
 {
-    public class Role
+    public class Team
     {
         public Guid Id { get; set; }
         public Guid PId { get; set; }
@@ -13,12 +13,12 @@ namespace WebApi.Models.Response.Web.Role
 
         public short OrderNum { get; set; }
     }
-    public class RoleTree
+    public class FootballTree
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
 
 
-        public List<RoleTree> Children { get; set; }
+        public List<FootballTree> Children { get; set; }
     }
 }
