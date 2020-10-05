@@ -8,7 +8,7 @@ namespace DataBase
 
     public partial class FT_Score
     {
-        public int Id { get; set; }
+        public long Id { get; set; }
 
         public Guid Match { get; set; }
 
@@ -16,14 +16,18 @@ namespace DataBase
 
         public Guid Assistant { get; set; }
 
+        public Guid Keeper { get; set; }
+
         public TimeSpan Time { get; set; }
 
         public short Flag { get; set; }
 
         public virtual FT_Match FT_Match { get; set; }
 
-        public virtual FT_Player FT_Player { get; set; }
+        public virtual FT_Player FT_Player_Keeper { get; set; }
 
-        public virtual FT_Player FT_Player1 { get; set; }
+        public virtual FT_Player FT_Player_Scorer { get; set; }
+
+        public virtual FT_Player FT_Player_Assistant { get; set; }
     }
 }

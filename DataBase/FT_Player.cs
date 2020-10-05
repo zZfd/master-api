@@ -13,6 +13,7 @@ namespace DataBase
         {
             FT_Score = new HashSet<FT_Score>();
             FT_Score1 = new HashSet<FT_Score>();
+            FT_Score2 = new HashSet<FT_Score>();
         }
 
         public Guid Id { get; set; }
@@ -37,12 +38,15 @@ namespace DataBase
 
         public virtual FT_Team FT_Team { get; set; }
 
-        public virtual FT_Team FT_Team1 { get; set; }
+        public virtual FT_Team FT_Team_Country { get; set; }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<FT_Score> FT_Score { get; set; }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<FT_Score> FT_Score1 { get; set; }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<FT_Score> FT_Score2 { get; set; }
     }
 }

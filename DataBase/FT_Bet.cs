@@ -8,7 +8,7 @@ namespace DataBase
 
     public partial class FT_Bet
     {
-        public int Id { get; set; }
+        public long Id { get; set; }
 
         public Guid Match { get; set; }
 
@@ -16,12 +16,16 @@ namespace DataBase
 
         [Required]
         [StringLength(200)]
-        public string Bet { get; set; }
+        public string Remarks { get; set; }
 
         [Column(TypeName = "date")]
         public DateTime Time { get; set; }
 
-        public short Money { get; set; }
+        public decimal Money { get; set; }
+
+        public decimal Profit { get; set; }
+
+        public decimal Odds { get; set; }
 
         [Required]
         [StringLength(50)]

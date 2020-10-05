@@ -11,6 +11,8 @@ namespace WebApi.Models.Response.Football
         public Guid PId { get; set; }
         public string Name { get; set; }
 
+        public short Flag { get; set; }
+
         public short OrderNum { get; set; }
     }
     public class FootballTree
@@ -20,5 +22,12 @@ namespace WebApi.Models.Response.Football
 
 
         public List<FootballTree> Children { get; set; }
+    }
+
+    public class CountryLeagues {
+        public Guid Id { get; set; }
+        public string Name { get; set; }
+        public string EName { get; set; }
+        public List<Common.IdEName> Leagues { get; set; }
     }
 }

@@ -58,7 +58,7 @@ namespace WebApi.Controllers.Football
                 return Json(new { status = "fail", msg = "查询不存在" });
             }
             //获得下属所有球队Id
-            var teamIds = Factory.TeamFactory.GetTeams(pId,Models.Config.Status.deleted,db);
+            var teamIds = Factory.TeamFactory.GetBelongTeams(pId,Models.Config.Status.deleted,db);
             if(teamIds.Count() == 0)
             {
                 //无下属球队时添加自身
@@ -202,7 +202,7 @@ namespace WebApi.Controllers.Football
                 if (updateStatus.Status != Models.Config.Status.normal)
                 {
                     //获得下属所有球队Id,不包含已删除的
-                    var teamIds = Factory.TeamFactory.GetTeams(updateStatus.Id, Models.Config.Status.deleted, db);
+                    var teamIds = Factory.TeamFactory.GetBelongTeams(updateStatus.Id, Models.Config.Status.deleted, db);
                     if(teamIds.Any())
                     {
                         foreach (var belong in db.FT_Team.Where(t => teamIds.Contains(t.Id)))
@@ -229,6 +229,30 @@ namespace WebApi.Controllers.Football
             {
                 return Json(new { status = "fail", msg = "请求参数错误" });
             }
+        }
+
+        /// <summary>
+        /// 查询单个
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public async Task<IHttpActionResult> GetTeamDetail(Guid id)
+        {
+            var team = await db.FT_Team.FindAsync(id);
+            if (team == null || team.Status == Models.Config.Status.deleted || team.Flag != Models.Config.FTeamFlag.team)
+            {
+                return Json(new { status = "fail", msg = "查询为空" });
+            }
+            var results = db.FT_Team.Where(t => t.Id == id).Select(t => new {
+                t.Id,
+                t.Name,
+                t.EName,
+                t.Status,
+                //当前球队比赛情况
+                Match = db.FT_Match.Where(m => m.HomeTeam == id || m.GuestTeam == id).Select(m => new { m.HomeScore, m.GuestScore, HomeTeam = m.FT_Team_Home.Name,GuestTeam = m.FT_Team_Guest.Name })
+            });
+            return Json(new { status = "success", msg = "查询成功", content = results });
         }
 
         /// <summary>

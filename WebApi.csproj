@@ -157,12 +157,15 @@
     <Compile Include="App_Start\NamespaceSelector.cs" />
     <Compile Include="App_Start\SwaggerConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Controllers\Football\BetController.cs" />
+    <Compile Include="Controllers\Football\MatchController.cs" />
     <Compile Include="Controllers\Football\PlayerController.cs" />
     <Compile Include="Controllers\Football\TeamController.cs" />
     <Compile Include="Controllers\Manage\MemberController.cs" />
     <Compile Include="Controllers\Manage\MenuController.cs" />
     <Compile Include="Controllers\Manage\OrgController.cs" />
     <Compile Include="Controllers\Manage\RoleController.cs" />
+    <Compile Include="Factory\CommonFactory.cs" />
     <Compile Include="Factory\OrgFactory.cs" />
     <Compile Include="Factory\TeamFactory.cs" />
     <Compile Include="Filter\AuthorityFilter.cs" />
@@ -171,6 +174,9 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\Config\Settings.cs" />
+    <Compile Include="Models\Request\Football\Match.cs" />
+    <Compile Include="Models\Request\Football\Player.cs" />
+    <Compile Include="Models\Response\Common\IdEName.cs" />
     <Compile Include="Models\Request\Common\UpdateStatus.cs" />
     <Compile Include="Models\Request\Setting.cs" />
     <Compile Include="Models\Request\Football\Team.cs" />

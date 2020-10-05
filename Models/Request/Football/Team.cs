@@ -28,4 +28,6 @@ namespace WebApi.Models.Request.Football
         [Required(ErrorMessage = "请进行排序")]
         public short OrderNum { get; set; }
     }
+
+    
 }

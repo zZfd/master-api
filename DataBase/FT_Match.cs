@@ -32,9 +32,9 @@ namespace DataBase
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<FT_Bet> FT_Bet { get; set; }
 
-        public virtual FT_Team FT_Team { get; set; }
+        public virtual FT_Team FT_Team_Home { get; set; }
 
-        public virtual FT_Team FT_Team1 { get; set; }
+        public virtual FT_Team FT_Team_Guest { get; set; }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<FT_Score> FT_Score { get; set; }

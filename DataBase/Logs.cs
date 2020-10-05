@@ -8,7 +8,7 @@ namespace DataBase
 
     public partial class Logs
     {
-        public int Id { get; set; }
+        public long Id { get; set; }
 
         public Guid Member { get; set; }
 

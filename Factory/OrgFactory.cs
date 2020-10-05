@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
-using OrgRes = WebApi.Models.Response.Web.Org;
+using OrgRes = WebApi.Models.Response.Manage;
 
 
 namespace WebApi.Factory

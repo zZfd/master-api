@@ -47,7 +47,7 @@ namespace DataBase
                 .IsUnicode(false);
 
             modelBuilder.Entity<FT_Bet>()
-                .Property(e => e.Bet)
+                .Property(e => e.Remarks)
                 .IsUnicode(false);
 
             modelBuilder.Entity<FT_Bet>()
@@ -76,15 +76,21 @@ namespace DataBase
                 .IsUnicode(false);
 
             modelBuilder.Entity<FT_Player>()
-                .HasMany(e => e.FT_Score)
-                .WithRequired(e => e.FT_Player)
-                .HasForeignKey(e => e.Scorer)
-                .WillCascadeOnDelete(false);
+               .HasMany(e => e.FT_Score)
+               .WithRequired(e => e.FT_Player_Assistant)
+               .HasForeignKey(e => e.Assistant)
+               .WillCascadeOnDelete(false);
 
             modelBuilder.Entity<FT_Player>()
                 .HasMany(e => e.FT_Score1)
-                .WithRequired(e => e.FT_Player1)
-                .HasForeignKey(e => e.Assistant)
+                .WithRequired(e => e.FT_Player_Keeper)
+                .HasForeignKey(e => e.Keeper)
+                .WillCascadeOnDelete(false);
+
+            modelBuilder.Entity<FT_Player>()
+                .HasMany(e => e.FT_Score2)
+                .WithRequired(e => e.FT_Player_Scorer)
+                .HasForeignKey(e => e.Scorer)
                 .WillCascadeOnDelete(false);
 
             modelBuilder.Entity<FT_Team>()
@@ -103,27 +109,27 @@ namespace DataBase
                 .WillCascadeOnDelete(false);
 
             modelBuilder.Entity<FT_Team>()
-                .HasMany(e => e.FT_Match)
-                .WithRequired(e => e.FT_Team)
-                .HasForeignKey(e => e.HomeTeam)
-                .WillCascadeOnDelete(false);
+                 .HasMany(e => e.FT_Match)
+                 .WithRequired(e => e.FT_Team_Home)
+                 .HasForeignKey(e => e.HomeTeam)
+                 .WillCascadeOnDelete(false);
 
             modelBuilder.Entity<FT_Team>()
                 .HasMany(e => e.FT_Match1)
-                .WithRequired(e => e.FT_Team1)
+                .WithRequired(e => e.FT_Team_Guest)
                 .HasForeignKey(e => e.GuestTeam)
                 .WillCascadeOnDelete(false);
 
             modelBuilder.Entity<FT_Team>()
                 .HasMany(e => e.FT_Player)
                 .WithRequired(e => e.FT_Team)
-                .HasForeignKey(e => e.Country)
+                .HasForeignKey(e => e.Team)
                 .WillCascadeOnDelete(false);
 
             modelBuilder.Entity<FT_Team>()
                 .HasMany(e => e.FT_Player1)
-                .WithRequired(e => e.FT_Team1)
-                .HasForeignKey(e => e.Team)
+                .WithRequired(e => e.FT_Team_Country)
+                .HasForeignKey(e => e.Country)
                 .WillCascadeOnDelete(false);
 
             modelBuilder.Entity<Logs>()
