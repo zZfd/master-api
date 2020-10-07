@@ -174,6 +174,7 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\Config\Settings.cs" />
+    <Compile Include="Models\Request\Football\Bet.cs" />
     <Compile Include="Models\Request\Football\Match.cs" />
     <Compile Include="Models\Request\Football\Player.cs" />
     <Compile Include="Models\Response\Common\IdEName.cs" />
@@ -184,6 +185,7 @@
     <Compile Include="Models\Request\Manage\Menu.cs" />
     <Compile Include="Models\Request\Manage\Org.cs" />
     <Compile Include="Models\Request\Manage\Role.cs" />
+    <Compile Include="Models\Response\Football\Match.cs" />
     <Compile Include="Models\Response\Mini\Menu\MenuTree.cs" />
     <Compile Include="Models\Response\Football\Team.cs" />
     <Compile Include="Models\Response\Manage\Member.cs" />

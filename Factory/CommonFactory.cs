@@ -58,7 +58,7 @@ namespace WebApi.Factory
         /// <summary>
         /// 格式化球员位置
         /// </summary>
-        /// <param name="status"></param>
+        /// <param name="flag"></param>
         /// <returns></returns>
         public static string PlayerFlagFormat(short flag)
         {
@@ -72,6 +72,29 @@ namespace WebApi.Factory
             try
             {
                 return playerFlag[flag];
+            }
+            catch
+            {
+                return "";
+            }
+        }
+
+        /// <summary>
+        /// 正常、禁用、已删除
+        /// </summary>
+        /// <param name="status"></param>
+        /// <returns></returns>
+        public static string NormalStatusFormat(short status)
+        {
+            Dictionary<short, string> normalStatus = new Dictionary<short, string>
+            {
+                { 0,"正常"},
+                {1,"禁用" },
+                {-1,"已删除" }
+            };
+            try
+            {
+                return normalStatus[status];
             }
             catch
             {

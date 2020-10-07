@@ -23,9 +23,9 @@ namespace WebApi.Controllers.Football
 
         }
 
-        public IHttpActionResult GetBet()
+        public IHttpActionResult GetBetDetail()
         {
-
-        }
+            
     }
+}
 }

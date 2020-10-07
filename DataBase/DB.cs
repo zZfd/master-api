@@ -66,6 +66,12 @@ namespace DataBase
                 .HasForeignKey(e => e.Match)
                 .WillCascadeOnDelete(false);
 
+            modelBuilder.Entity<FT_Match>()
+                .HasMany(e => e.FT_Match_Player)
+                .WithRequired(e => e.FT_Match)
+                .HasForeignKey(e => e.Match)
+                .WillCascadeOnDelete(false);
+
             modelBuilder.Entity<FT_Player>()
                 .Property(e => e.Name)
                 .IsUnicode(false);
@@ -92,6 +98,12 @@ namespace DataBase
                 .WithRequired(e => e.FT_Player_Scorer)
                 .HasForeignKey(e => e.Scorer)
                 .WillCascadeOnDelete(false);
+
+            modelBuilder.Entity<FT_Player>()
+              .HasMany(e => e.FT_Match_Player)
+              .WithRequired(e => e.FT_Player)
+              .HasForeignKey(e => e.Player)
+              .WillCascadeOnDelete(false);
 
             modelBuilder.Entity<FT_Team>()
                 .Property(e => e.Name)
