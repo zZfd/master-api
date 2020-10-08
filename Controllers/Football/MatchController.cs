@@ -99,7 +99,7 @@ namespace WebApi.Controllers.Football
         {
             if (ModelState.IsValid)
             {
-                var matches = db.FT_Match.AsQueryable();
+                var matches = db.FT_Match.AsNoTracking().AsQueryable();
                 if (param.HomeTeam != Guid.Empty)
                 {
                     matches = matches.Where(m => m.HomeTeam == param.HomeTeam);
@@ -147,11 +147,6 @@ namespace WebApi.Controllers.Football
         }
 
         #region 合并到保存比赛详情
-        /// <summary>
-        /// 更新比赛总比分
-        /// </summary>
-        /// <param name="param"></param>
-        /// <returns></returns>
 
         //[HttpPut]
         //public async Task<IHttpActionResult> UpdateMatchScore(ReqFB.MatchScore param)

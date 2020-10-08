@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-namespace WebApi.Models.Response.Manage
+namespace WebApi.Models.Response.Manage { 
     public class Member
     {
         public Guid Id { get; set; }

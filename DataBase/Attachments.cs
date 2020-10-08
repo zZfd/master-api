@@ -37,5 +37,8 @@ namespace DataBase
         public string FileType { get; set; }
 
         public virtual Members Members { get; set; }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<FT_Bet> FT_Bet { get; set; }
     }
 }

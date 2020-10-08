@@ -8,6 +8,8 @@ namespace WebApi.Models.Request.Football
 {
     public class Bet
     {
+        public Guid Id { get; set; }
+
         [Required(ErrorMessage = "请选择比赛")]
         public Guid Match { get; set; }
 
@@ -15,6 +17,7 @@ namespace WebApi.Models.Request.Football
         public Guid Team { get; set; }
 
         [Required(ErrorMessage = "请输入投注信息")]
+        [StringLength(200, MinimumLength = 5)]
         public string Remarks { get; set; }
 
         [Required(ErrorMessage = "请选择投注时间")]
@@ -26,12 +29,16 @@ namespace WebApi.Models.Request.Football
         public decimal Profit { get; set; }
 
         [Required(ErrorMessage = "请输入当前赔率")]
-        public decimal Odds { get; set; }
+        public float Odds { get; set; }
+
+        public Guid Attachment { get; set; }
 
         [Required(ErrorMessage = "请输入投注平台")]
         public string Platform { get; set; }
 
-        public bool IsSuccess { get; set; }
+        [Required(ErrorMessage = "请选择状态")]
+        [Range(minimum: Models.Config.Status.deleted, maximum: Models.Config.Status.forbidden)]
+        public short IsSuccess { get; set; }
     }
 
     public class ListBet
@@ -59,7 +66,7 @@ namespace WebApi.Models.Request.Football
 
         public string Platform { get; set; }
 
-        public bool IsSuccess { get; set; }
+        public short? IsSuccess { get; set; }
       
 
         [Required(ErrorMessage = "请选择当前页")]
@@ -70,4 +77,6 @@ namespace WebApi.Models.Request.Football
         [Range(minimum: 1, maximum: 1000)]
         public int PageSize { get; set; }
     }
+
+    
 }

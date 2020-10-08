@@ -101,5 +101,28 @@ namespace WebApi.Factory
                 return "";
             }
         }
+
+        /// <summary>
+        /// 未结算、正确、错误
+        /// </summary>
+        /// <param name="status"></param>
+        /// <returns></returns>
+        public static string BetResultFormat(short status)
+        {
+            Dictionary<short, string> normalStatus = new Dictionary<short, string>
+            {
+                { 0,"未结算"},
+                {1,"正确" },
+                {-1,"错误" }
+            };
+            try
+            {
+                return normalStatus[status];
+            }
+            catch
+            {
+                return "";
+            }
+        }
     }
 }

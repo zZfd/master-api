@@ -46,6 +46,12 @@ namespace DataBase
                 .Property(e => e.FileType)
                 .IsUnicode(false);
 
+            modelBuilder.Entity<Attachments>()
+                .HasMany(e => e.FT_Bet)
+                .WithRequired(e => e.Attachments)
+                .HasForeignKey(e => e.Attachment)
+                .WillCascadeOnDelete(false);
+
             modelBuilder.Entity<FT_Bet>()
                 .Property(e => e.Remarks)
                 .IsUnicode(false);

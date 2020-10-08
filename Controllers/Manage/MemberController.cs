@@ -46,7 +46,7 @@ namespace WebApi.Controllers.Manage
                 string password = rsaCryptoService.Decrypt(member.Password);
                 if(!Helper.EncryptionHelper.SHA1(password + mem.PasswordSalt, Encoding.UTF8, false).Equals(mem.Password))
                 {
-                    return Json(new FailResponse("用户名密码错误"));
+                    return Json(new { status = "fail", msg = "用户名密码错误" });
                 }
                 return Json(new { status = "success", msg = "登录成功", content = Helper.EncryptionHelper.CreateToken(mem.Id, mem.PasswordSalt) });
             }
