@@ -10,6 +10,7 @@ using ResManage = WebApi.Models.Response.Manage;
 
 namespace WebApi.Controllers.Manage
 {
+
     public class RoleController : ApiController
     {
         private readonly DataBase.DB db = new DataBase.DB();

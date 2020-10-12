@@ -53,12 +53,12 @@ namespace WebApi.Controllers.Football
         public IHttpActionResult GetLazyTeam(Guid pId)
         {
             var team = db.FT_Team.Find(pId);
-            if(team == null)
+            if( pId != Guid.Empty && team == null)
             {
                 return Json(new { status = "fail", msg = "查询不存在" });
             }
             //获得下属所有球队Id
-            var teamIds = Factory.TeamFactory.GetBelongTeams(pId,Models.Config.Status.deleted,db);
+            var teamIds = Factory.TeamFactory.GetBelongs(pId,Models.Config.Status.deleted,db);
             if(teamIds.Count() == 0)
             {
                 //无下属球队时添加自身
@@ -67,23 +67,23 @@ namespace WebApi.Controllers.Football
 
             try
             {
-                var teams = db.FT_Team.AsNoTracking().Where(t => t.Id == pId && t.Status != Models.Config.Status.deleted).Select(t=>new { 
+                var teams = db.FT_Team.AsNoTracking().Where(t => t.PId == pId && t.Status != Models.Config.Status.deleted).Select(t=>new { 
                     t.Id,
                     t.PId,
                     t.Name,
                     t.EName,
                     t.Status,
-                    Player = db.FT_Player.AsNoTracking().Where(p=>teamIds.Contains(p.Team) && p.Status != Models.Config.Status.deleted).Count(),
-                    Match = db.FT_Match.AsNoTracking().Where(m=>teamIds.Contains(m.HomeTeam) || teamIds.Contains(m.GuestTeam)).Count(),
-                    HasChildren = db.FT_Team.AsNoTracking().Where(ft=>ft.PId == ft.Id && ft.Status != Models.Config.Status.deleted).Any()
+                    Player = db.FT_Player.Where(p=>teamIds.Contains(p.Team) && p.Status != Models.Config.Status.deleted).Count(),
+                    Match = db.FT_Match.Where(m=>teamIds.Contains(m.HomeTeam) || teamIds.Contains(m.GuestTeam)).Count(),
+                    HasChildren = db.FT_Team.Where(ft=>ft.PId == t.Id && ft.Status != Models.Config.Status.deleted).Any()
 
                 });
-                return Json(new { status = "success", msg = "获取成功",content = teams});
+                return Json(new { code = 20000, status = "success",msg = "获取成功",data = teams});
             }
             catch (Exception ex)
             {
                 Helper.LogHelper.WriteErrorLog(ex);
-                return Json(new { status = "fail", msg = "服务器内部错误" });
+                return Json(new { code = 20000, status = "fail", msg = "服务器内部错误" });
             }
         }
 

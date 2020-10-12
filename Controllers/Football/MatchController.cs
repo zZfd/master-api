@@ -10,6 +10,7 @@ using ResFB = WebApi.Models.Response.Football;
 
 namespace WebApi.Controllers.Football
 {
+    [Route("api/football/match/{action}")]
     public class MatchController : ApiController
     {
         private readonly DataBase.DB db = new DataBase.DB();
@@ -187,6 +188,7 @@ namespace WebApi.Controllers.Football
         /// <param name="matchId"></param>
         /// <returns></returns>
         [HttpGet]
+        [Route("api/football/match/{id}")]
         public async Task<IHttpActionResult> GetMatchDetail(Guid matchId)
         {
             var matchDB = await db.FT_Match.FindAsync(matchId);

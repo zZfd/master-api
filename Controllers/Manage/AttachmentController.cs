@@ -8,6 +8,8 @@ using System.Web.Http;
 
 namespace WebApi.Controllers.Manage
 {
+    [RoutePrefix("manage/")]
+
     public class AttachmentController : ApiController
     {
         private readonly DataBase.DB db = new DataBase.DB();

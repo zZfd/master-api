@@ -5,6 +5,7 @@ using Swashbuckle.Application;
 using WebApi.App_Start;
 using System.Linq;
 using System.IO;
+using System.Web.Http.Description;
 
 [assembly: PreApplicationStartMethod(typeof(SwaggerConfig), "Register")]
 
@@ -44,7 +45,7 @@ namespace WebApi
 
                         // If you want the output Swagger docs to be indented properly, enable the "PrettyPrint" option.
                         //
-                        //c.PrettyPrint();
+                        c.PrettyPrint();
 
                         // If your API has multiple versions, use "MultipleApiVersions" instead of "SingleApiVersion".
                         // In this case, you must provide a lambda that tells Swashbuckle which actions should be
@@ -55,8 +56,9 @@ namespace WebApi
                         //    (apiDesc, targetApiVersion) => ResolveVersionSupportByRouteConstraint(apiDesc, targetApiVersion),
                         //    (vc) =>
                         //    {
-                        //        vc.Version("v2", "Swashbuckle Dummy API V2");
-                        //        vc.Version("v1", "Swashbuckle Dummy API V1");
+                               
+                        //        vc.Version("football", "Swashbuckle Dummy API Football").Description("For Development Environment Football");
+                        //        vc.Version("manage", "Swashbuckle Dummy API Manage").Description("For Development Environment Manage");
                         //    });
 
                         // You can use "BasicAuth", "ApiKey" or "OAuth2" options to describe security schemes for the API.
@@ -94,7 +96,7 @@ namespace WebApi
                         // By default, this will be controller name but you can use the "GroupActionsBy" option to
                         // override with any value.
                         //
-                        //c.GroupActionsBy(apiDesc => apiDesc.HttpMethod.ToString());
+                        //c.GroupActionsBy(apiDesc => apiDesc.RelativePath.ToString());
 
                         // You can also specify a custom sort order for groups (as defined by "GroupActionsBy") to dictate
                         // the order in which operations are listed. For example, if the default grouping is in place
@@ -266,6 +268,13 @@ namespace WebApi
         private static string GetXmlCommentsPath(string subName)
         {
             return Directory.GetFiles(System.AppDomain.CurrentDomain.BaseDirectory + "bin\\").FirstOrDefault(n => n.ToLower().EndsWith(subName.ToLower() + ".xml"));
+        }
+
+        private static bool ResolveVersionSupportByRouteConstraint(ApiDescription apiDesc, string targetApiVersion)
+        {
+            //过滤由多版本的controller带来的重复route注册api desc,按命名空间的版本信息过滤,只返回版本内的api
+            //string nameSpace = apiDesc.ActionDescriptor.ControllerDescriptor.ControllerType.Namespace.ToLower();
+            return apiDesc.ActionDescriptor.ControllerDescriptor.ControllerType.Namespace.ToLower().Contains(string.Format("{0}", targetApiVersion));
         }
     }
 }

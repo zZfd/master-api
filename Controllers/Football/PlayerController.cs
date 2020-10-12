@@ -6,6 +6,7 @@ using ReqFB = WebApi.Models.Request.Football;
 
 namespace WebApi.Controllers.Football
 {
+    [Route("api/football/player/{action}")]
     public class PlayerController : ApiController
     {
         private readonly DataBase.DB db = new DataBase.DB();
@@ -164,6 +165,7 @@ namespace WebApi.Controllers.Football
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet]
+        [Route("api/football/player/{id}")]
         public async Task<IHttpActionResult> GetPlayerDetail(Guid id)
         {
             var player = await db.FT_Player.FindAsync(id);

@@ -10,6 +10,7 @@ using ResFB = WebApi.Models.Response.Football;
 
 namespace WebApi.Controllers.Football
 {
+    [Route("api/football/bet/{action}")]
     public class BetController : ApiController
     {
         private readonly DataBase.DB db = new DataBase.DB();
@@ -200,6 +201,7 @@ namespace WebApi.Controllers.Football
             }
         }
 
+        [Route("api/football/bet/{id}")]
         [HttpGet]
         public async Task<IHttpActionResult> GetBetDetail(Guid id)
         {

@@ -25,9 +25,11 @@ namespace WebApi
 
             //var jsonFormatter = new JsonMediaTypeFormatter();
             //config.Services.Replace(typeof(IContentNegotiator), new JsonContentNegotiator(jsonFormatter));
+
+            //注册支持namespace的HttpControllerSelector，替换默认DefaultHttpControllerSelector
             config.Services.Replace(typeof(IHttpControllerSelector), new NamespaceSelector(config));
 
-            //Web API 路由
+            //Web API 启用特性路由
             config.MapHttpAttributeRoutes();
 
             //config.Routes.MapHttpRoute(
@@ -46,14 +48,25 @@ namespace WebApi
             //    }
             //    );
             config.Routes.MapHttpRoute(
-                name: "ManageApi",
-                routeTemplate: "api/manage/{controller}/{action}/{id}",
+                name: "DefaultApi",
+                routeTemplate: "api/manage/{controller}/{action}",
                 defaults: new
                 {
                     id = RouteParameter.Optional,
-                    namespaces = new[] { "WebApi.Controllers.Manage" }
+                    namespace_name = new string[] { "WebApi.Controllers.Manage" }
+                    //namespaces = new[] { "WebApi.Controllers.Football", "WebApi.Controllers.Manage" }
                 }
+              
                 );
+            //config.Routes.IgnoreRoute(
+            //    routeName: "ManageApi",
+            //    routeTemplate: "api/manage/{controller}/{action}/{id}",
+            //    constraints: new
+            //    {
+            //        id = RouteParameter.Optional,
+            //        namespaces = new[] { "WebApi.Controllers.Football" }
+            //    }
+            //    );
             config.Routes.MapHttpRoute(
                 name: "FootballApi",
                 routeTemplate: "api/football/{controller}/{action}/{id}",
@@ -63,6 +76,16 @@ namespace WebApi
                     namespaces = new[] { "WebApi.Controllers.Football" }
                 }
                 );
+
+            //config.Routes.IgnoreRoute(
+            //    routeName: "FootballApi",
+            //    routeTemplate: "api/manage/{controller}/{action}/{id}",
+            //    constraints: new
+            //    {
+            //        id = RouteParameter.Optional,
+            //        namespaces = new[] { "WebApi.Controllers.Manage" }
+            //    }
+            //    );
         }
 
         public class JsonContentNegotiator : IContentNegotiator

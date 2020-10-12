@@ -12,6 +12,7 @@ using ResManage = WebApi.Models.Response.Manage;
 
 namespace WebApi.Controllers.Manage
 {
+
     public class MemberController : ApiController
     {
         private readonly DataBase.DB db = new DataBase.DB();
@@ -37,22 +38,22 @@ namespace WebApi.Controllers.Manage
         {
             if (ModelState.IsValid)
             {
-                Helper.RSACryptoService rsaCryptoService = new Helper.RSACryptoService(ConfigurationManager.AppSettings["RSAPrivate"].ToString(), ConfigurationManager.AppSettings["RSAPublic"].ToString());
+                //Helper.RSACryptoService rsaCryptoService = new Helper.RSACryptoService(ConfigurationManager.AppSettings["RSAPrivate"].ToString(), ConfigurationManager.AppSettings["RSAPublic"].ToString());
                 DataBase.Members mem = db.Members.FirstOrDefault(m => m.Name == member.UserName);
                 if (mem == null || mem.Status != Models.Config.Status.normal)
                 {
-                    return Json(new { status = "fail", msg = "用户不存在或已被禁用" });
+                    return Json(new { code = 20000, msg = "用户不存在或已被禁用" });
                 }
-                string password = rsaCryptoService.Decrypt(member.Password);
-                if(!Helper.EncryptionHelper.SHA1(password + mem.PasswordSalt, Encoding.UTF8, false).Equals(mem.Password))
+                //string password = rsaCryptoService.Decrypt(member.Password);
+                if(!Helper.EncryptionHelper.SHA1(member.Password + mem.PasswordSalt, Encoding.UTF8, false).Equals(mem.Password))
                 {
                     return Json(new { status = "fail", msg = "用户名密码错误" });
                 }
-                return Json(new { status = "success", msg = "登录成功", content = Helper.EncryptionHelper.CreateToken(mem.Id, mem.PasswordSalt) });
+                return Json(new { code = 20000, msg = "登录成功", data = new { token = Helper.EncryptionHelper.CreateToken(mem.Id, mem.PasswordSalt) } });
             }
             else
             {
-                return Json(new { status = "fail", msg = "请求参数格式错误" });
+                return Json(new { code = 20000, msg = "请求参数格式错误" });
             }
 
         }
@@ -61,9 +62,9 @@ namespace WebApi.Controllers.Manage
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public async Task<IHttpActionResult> GetLoginerInfo()
+        public async Task<IHttpActionResult> GetLoginerInfo(string token)
         {
-            Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
+            Guid userId = Helper.EncryptionHelper.GetUserId(token);
             if (userId == Guid.Empty)
             {
                 return Json(new { status = "fail", msg = "请求错误" });
@@ -87,7 +88,7 @@ namespace WebApi.Controllers.Manage
                     mr.Roles.Name
                 })
             }).FirstOrDefault();
-            return Json(new { status = "success", msg = "获取成功", content = loginInfo });
+            return Json(new { code = 20000, msg = "获取成功", data = loginInfo });
         }
         
         /// <summary>
