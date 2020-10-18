@@ -23,11 +23,11 @@ namespace DataBase
         public Guid PId { get; set; }
 
         [Required]
-        [StringLength(20)]
+        [StringLength(40)]
         public string Name { get; set; }
 
         [Required]
-        [StringLength(20)]
+        [StringLength(100)]
         public string EName { get; set; }
 
         public short Flag { get; set; }

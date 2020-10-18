@@ -188,6 +188,7 @@
     <Compile Include="Models\Request\Manage\Role.cs" />
     <Compile Include="Models\Response\Football\Bet.cs" />
     <Compile Include="Models\Response\Football\Match.cs" />
+    <Compile Include="Models\Response\Football\Player.cs" />
     <Compile Include="Models\Response\Mini\Menu\MenuTree.cs" />
     <Compile Include="Models\Response\Football\Team.cs" />
     <Compile Include="Models\Response\Manage\Member.cs" />

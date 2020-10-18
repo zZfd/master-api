@@ -19,13 +19,13 @@ namespace WebApi.Models.Request.Football
 
     public class ListMatches
     {
-        public Guid HomeTeam { get; set; }
-        public Guid GuestTeam { get; set; }
+        public Guid? HomeTeam { get; set; }
+        public Guid? GuestTeam { get; set; }
 
-        public DateTime StartTime { get; set; }
-        public DateTime EndTime { get; set; }
+        public DateTime? StartTime { get; set; }
+        public DateTime? EndTime { get; set; }
 
-        public Guid League { get; set; }
+        public Guid? League { get; set; }
 
         [Required(ErrorMessage = "请选择当前页")]
         [Range(minimum: 1, maximum: 99999)]

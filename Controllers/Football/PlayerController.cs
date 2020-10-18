@@ -3,10 +3,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Http;
 using ReqFB = WebApi.Models.Request.Football;
+using ResFB = WebApi.Models.Response.Football;
+
 
 namespace WebApi.Controllers.Football
 {
-    [Route("api/football/player/{action}")]
     public class PlayerController : ApiController
     {
         private readonly DataBase.DB db = new DataBase.DB();
@@ -36,7 +37,7 @@ namespace WebApi.Controllers.Football
                 try
                 {
                     await db.SaveChangesAsync();
-                    return Json(new { status = "success", msg = "保存成功" });
+                    return Json(new { code = 20000,status = "success", msg = "保存成功" });
                 }
                 catch (Exception ex)
                 {
@@ -46,7 +47,7 @@ namespace WebApi.Controllers.Football
             }
             else
             {
-                return Json(new { status = "fail", msg = "请求参数错误", content = ModelState });
+                return Json(new { code = 20000,status = "fail", msg = "请求参数错误", content = ModelState });
             }
         }
 
@@ -62,12 +63,12 @@ namespace WebApi.Controllers.Football
             {
                 if (player.Id == null)
                 {
-                    return Json(new { status = "fail", msg = "Id为空" });
+                    return Json(new { code = 20000, status = "fail", msg = "Id为空" });
                 }
                 var playerDB = await db.FT_Player.FindAsync(player.Id);
                 if (playerDB == null)
                 {
-                    return Json(new { status = "fail", msg = "球员不存在" });
+                    return Json(new { code = 20000, status = "fail", msg = "球员不存在" });
                 }
                 playerDB.Name = player.Name;
                 playerDB.EName = player.EName;
@@ -80,7 +81,7 @@ namespace WebApi.Controllers.Football
                 try
                 {
                     await db.SaveChangesAsync();
-                    return Json(new { status = "success", msg = "修改成功" });
+                    return Json(new { code = 20000,status = "success", msg = "修改成功" });
                 }
                 catch (Exception ex)
                 {
@@ -90,7 +91,7 @@ namespace WebApi.Controllers.Football
             }
             else
             {
-                return Json(new { status = "fail", msg = "请求参数错误", content = ModelState });
+                return Json(new { code = 20000, status = "fail", msg = "请求参数错误", content = ModelState });
             }
         }
 
@@ -113,11 +114,11 @@ namespace WebApi.Controllers.Football
                 {
                     players = players.Where(p => p.Name.StartsWith(query.EName));
                 }
-                if (query.MinAge != 0)
+                if (query.MinAge != -1)
                 {
                     players = players.Where(p => p.Age >= query.MinAge);
                 }
-                if (query.MaxAge != 0)
+                if (query.MaxAge != -1)
                 {
                     players = players.Where(p => p.Age <= query.MaxAge);
                 }
@@ -135,27 +136,27 @@ namespace WebApi.Controllers.Football
                 }
                 if (players.Any())
                 {
-                    var results = players.Select(p => new
+                    var results = players.Select(p => new ResFB.Player
                     {
-                        p.Id,
-                        p.Name,
-                        p.EName,
-                        p.Age,
-                        p.Status,
-                        p.Team,
-                        p.Country,
-                        p.Flag
-                    });
-                    return Json(new { status = "success", msg = "查询成功", content = results });
+                        Id = p.Id,
+                        Name = p.Name,
+                        EName = p.EName,
+                        Age = p.Age,
+                        Status = p.Status,
+                        Team = p.Team,
+                        Country = p.Country,
+                        Flag = p.Flag
+                    }).OrderBy(s => s.Status);
+                    return Json(new { code = 20000, status = "success", msg = "查询成功", content = Helper.PaginationHelper<ResFB.Player>.Paging(results,query.PageIndex,query.PageSize) });
                 }
                 else
                 {
-                    return Json(new { status = "fail", msg = "查询为空" });
+                    return Json(new { code = 20000, status = "fail", msg = "查询为空" });
                 }
             }
             else
             {
-                return Json(new { status = "fail", msg = "请求参数错误", content = ModelState });
+                return Json(new { code = 20000, status = "fail", msg = "请求参数错误", content = ModelState });
             }
         }
 
@@ -165,7 +166,6 @@ namespace WebApi.Controllers.Football
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet]
-        [Route("api/football/player/{id}")]
         public async Task<IHttpActionResult> GetPlayerDetail(Guid id)
         {
             var player = await db.FT_Player.FindAsync(id);

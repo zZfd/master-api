@@ -37,19 +37,12 @@ namespace WebApi.Models.Request.Football
     {
         public string Name { get; set; }
         public string EName { get; set; }
-        [Range(minimum: Models.Config.FPlayerFlag.front-1, maximum: Models.Config.FPlayerFlag.back)]
-        public short Flag
+        [Range(minimum: Models.Config.FPlayerFlag.keeper - 1, maximum: Models.Config.FPlayerFlag.back)]
+        public short Flag { get; set; }
 
-        {
-
-            get { return Flag; }
-
-            set { Flag = -1; }
-
-        }
-        [Range(minimum: 0, maximum: 50)]
+        [Range(minimum: -1, maximum: 50)]
         public short MinAge { get; set; }
-        [Range(minimum: 0, maximum: 50)] 
+        [Range(minimum: -1, maximum: 50)] 
         public short MaxAge { get; set; }
 
         public Guid? Team { get; set; }

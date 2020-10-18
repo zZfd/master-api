@@ -14,7 +14,7 @@ namespace DataBase
 
         public Guid Scorer { get; set; }
 
-        public Guid? Assistant { get; set; }
+        public Guid Assistant { get; set; }
 
         public Guid Keeper { get; set; }
 

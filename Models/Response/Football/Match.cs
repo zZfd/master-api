@@ -8,8 +8,8 @@ namespace WebApi.Models.Response.Football
     public class Match
     {
         public Guid Id { get; set; }
-        public string HomeTeam { get; set; }
-        public string GuestTeam { get; set; }
+        public Guid HomeTeam { get; set; }
+        public Guid GuestTeam { get; set; }
         public short HomeScore { get; set; }
         public short GuestScore { get; set; }
         public short Total { get; set; }
@@ -19,10 +19,10 @@ namespace WebApi.Models.Response.Football
 
     public class MatchScore
     {
-        public string Team { get; set; }
-        public string Scorer { get; set; }
-        public string Assistant { get; set; }
-        public string Keeper { get; set; }
+        public Guid Team { get; set; }
+        public Guid Scorer { get; set; }
+        public Guid Assistant { get; set; }
+        public Guid Keeper { get; set; }
         public TimeSpan Time { get; set; }
         public short Flag { get; set; }
     }

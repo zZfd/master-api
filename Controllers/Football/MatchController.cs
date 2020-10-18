@@ -10,7 +10,6 @@ using ResFB = WebApi.Models.Response.Football;
 
 namespace WebApi.Controllers.Football
 {
-    [Route("api/football/match/{action}")]
     public class MatchController : ApiController
     {
         private readonly DataBase.DB db = new DataBase.DB();
@@ -35,7 +34,7 @@ namespace WebApi.Controllers.Football
                 try
                 {
                     await db.SaveChangesAsync();
-                    return Json(new { status = "success", msg = "保存成功" });
+                    return Json(new { code = 20000, status = "success", msg = "保存成功" });
                 }
                 catch (Exception ex)
                 {
@@ -45,7 +44,7 @@ namespace WebApi.Controllers.Football
             }
             else
             {
-                return Json(new { status = "fail", msg = "请求参数错误", content = ModelState });
+                return Json(new { code = 20000, status = "fail", msg = "请求参数错误", content = ModelState });
             }
         }
 
@@ -61,13 +60,13 @@ namespace WebApi.Controllers.Football
             {
                 if(match.Id == null)
                 {
-                    return Json(new { status = "fail", msg = "Id为空" });
+                    return Json(new { code = 20000, status = "fail", msg = "Id为空" });
                 }
                
                 var matchDB = await db.FT_Match.FindAsync(match.Id);
                 if (matchDB == null)
                 {
-                    return Json(new { status = "fail", msg = "比赛不存在" });
+                    return Json(new { code = 20000, status = "fail", msg = "比赛不存在" });
                 }
                 matchDB.HomeTeam = match.HomeTeam;
                 matchDB.GuestTeam = match.GuestTeam;
@@ -76,7 +75,7 @@ namespace WebApi.Controllers.Football
                 try
                 {
                     await db.SaveChangesAsync();
-                    return Json(new { status = "success", msg = "修改成功" });
+                    return Json(new { code = 20000, status = "success", msg = "修改成功" });
                 }
                 catch (Exception ex)
                 {
@@ -86,7 +85,7 @@ namespace WebApi.Controllers.Football
             }
             else
             {
-                return Json(new { status = "fail", msg = "请求参数错误", content = ModelState });
+                return Json(new { code = 20000, status = "fail", msg = "请求参数错误", content = ModelState });
             }
         }
 
@@ -101,49 +100,51 @@ namespace WebApi.Controllers.Football
             if (ModelState.IsValid)
             {
                 var matches = db.FT_Match.AsNoTracking().AsQueryable();
-                if (param.HomeTeam != Guid.Empty)
+                if (param.HomeTeam != null)
                 {
                     matches = matches.Where(m => m.HomeTeam == param.HomeTeam);
                 }
-                if (param.GuestTeam != Guid.Empty)
+                if (param.GuestTeam != null)
                 {
                     matches = matches.Where(m => m.GuestTeam == param.GuestTeam);
                 }
-                if (param.StartTime != DateTime.MinValue)
+                if (param.StartTime != null)
                 {
                     matches = matches.Where(m => m.Time >= param.StartTime);
                 }
-                if (param.EndTime != DateTime.MinValue)
+                if (param.EndTime != null)
                 {
                     matches = matches.Where(m => m.Time <= param.EndTime);
                 }
-                if (param.League != Guid.Empty)
+                if (param.League != null)
                 {
-                    var belongTeams = Factory.TeamFactory.GetBelongTeams(param.League,Models.Config.Status.normal,db);
+                    var belongTeams = Factory.TeamFactory.GetBelongTeams((Guid)param.League,Models.Config.Status.normal,db);
                     matches = matches.Where(p => belongTeams.Contains(p.Id));
                 }
                 
                 if (matches.Any())
                 {
-                    var results = matches.Select(p => new
+                    var results = matches.Select(p => new ResFB.Match
                     {
-                        p.Id,
-                        HomeName = p.FT_Team_Home.Name,
-                        GuestName = p.FT_Team_Guest.Name,
+                        Id = p.Id,
+                        HomeTeam = p.HomeTeam,
+                        GuestTeam = p.GuestTeam,
                         //-1为未开赛
-                        p.HomeScore,
-                        p.GuestScore,
-                    });
-                    return Json(new { status = "success", msg = "查询成功", content = results });
+                        HomeScore = p.HomeScore,
+                        GuestScore = p.GuestScore,
+                        Total = p.Total,
+                        Time = p.Time
+                    }).OrderBy(p => p.Time);
+                    return Json(new { code = 20000,status = "success", msg = "查询成功", content = Helper.PaginationHelper<ResFB.Match>.Paging(results,param.PageIndex,param.PageSize) });
                 }
                 else
                 {
-                    return Json(new { status = "fail", msg = "查询为空" });
+                    return Json(new { code = 20000, status = "fail", msg = "查询为空" });
                 }
             }
             else
             {
-                return Json(new { status = "fail", msg = "请求参数错误", content = ModelState });
+                return Json(new { code = 20000, status = "fail", msg = "请求参数错误", content = ModelState });
             }
         }
 
@@ -188,21 +189,20 @@ namespace WebApi.Controllers.Football
         /// <param name="matchId"></param>
         /// <returns></returns>
         [HttpGet]
-        [Route("api/football/match/{id}")]
         public async Task<IHttpActionResult> GetMatchDetail(Guid matchId)
         {
             var matchDB = await db.FT_Match.FindAsync(matchId);
             if (matchDB == null)
             {
-                return Json(new { status = "fail", msg = "比赛不存在" });
+                return Json(new { code = 20000,status = "fail", msg = "比赛不存在" });
             }
             ResFB.MatchDetail matchDetail = new ResFB.MatchDetail
             {
                 Match = new ResFB.Match
                 {
                     Id = matchId,
-                    HomeTeam = matchDB.FT_Team_Home.Name,
-                    GuestTeam = matchDB.FT_Team_Guest.Name,
+                    HomeTeam = matchDB.HomeTeam,
+                    GuestTeam = matchDB.GuestTeam,
                     HomeScore = matchDB.HomeScore,
                     GuestScore = matchDB.GuestScore,
                     Total = matchDB.Total,
@@ -213,10 +213,10 @@ namespace WebApi.Controllers.Football
             };
             var matchScores = db.FT_Score.Where(s => s.Match == matchId).Select(s=>new ResFB.MatchScore
             { 
-                Team = s.FT_Player_Scorer.FT_Team.Name,
-                Scorer = s.FT_Player_Scorer.Name,
-                Assistant = s.Assistant == null ? "" :s.FT_Player_Assistant.Name,
-                Keeper = s.FT_Player_Keeper.Name,
+                Team = s.FT_Player_Scorer.Team,
+                Scorer = s.Scorer,
+                Assistant = s.Assistant,
+                Keeper = s.Keeper,
                 Time = s.Time,
                 Flag = s.Flag
             }).ToList();
@@ -231,7 +231,7 @@ namespace WebApi.Controllers.Football
                     matchDetail.GuestScores.Add(score);
                 }
             }
-            return Json(new { status = "success", msg = "获取成功",content = matchDetail });
+            return Json(new { code = 20000, status = "success", msg = "获取成功",content = matchDetail });
 
         }
 
@@ -249,13 +249,19 @@ namespace WebApi.Controllers.Football
                 var matchDB = await db.FT_Match.FindAsync(matchDetail.Id);
                 if (matchDB == null)
                 {
-                    return Json(new { status = "fail", msg = "比赛不存在" });
+                    return Json(new { code = 20000, status = "fail", msg = "比赛不存在" });
                 }
                 matchDB.HomeScore = matchDB.GuestScore = matchDB.Total = 0;
-                foreach(ReqFB.Score score in matchDetail.Scores)
+                // 删除已有进球，重新添加
+                db.FT_Score.RemoveRange(db.FT_Score.Where(s => s.Match == matchDetail.Id).Select(s => s));
+
+                foreach (ReqFB.Score score in matchDetail.Scores)
                 {
+                    // 进球者和助攻者可能为一人  自己造点球并打进
+                    // 守门员可能为临时任命的非守门员
                     DataBase.FT_Score scoreDB = new DataBase.FT_Score
                     {
+                        Match = matchDetail.Id,
                         Scorer = score.Scorer,
                         Assistant = score.Assistant,
                         Keeper = score.Keeper,
@@ -277,7 +283,7 @@ namespace WebApi.Controllers.Football
                 try
                 {
                     await db.SaveChangesAsync();
-                    return Json(new { status = "success", msg = "添加成功" });
+                    return Json(new { code = 20000, status = "success", msg = "保存成功" });
                 }
                 catch (Exception ex)
                 {
@@ -287,7 +293,7 @@ namespace WebApi.Controllers.Football
             }
             else
             {
-                return Json(new { status = "fail", msg = "请求参数错误", content = ModelState });
+                return Json(new { code = 20000, status = "fail", msg = "请求参数错误", content = ModelState });
             }
         }
     }

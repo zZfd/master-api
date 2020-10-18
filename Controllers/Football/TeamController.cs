@@ -13,6 +13,32 @@ namespace WebApi.Controllers.Football
     {
         private readonly DataBase.DB db = new DataBase.DB();
         private const string TOKEN = "ZFDYES";
+
+        /// <summary>
+        /// 获取国家列表
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        public IHttpActionResult GetCountries()
+        {
+            try
+            {
+
+                var countries = db.FT_Team.Where(t => t.Status == Models.Config.Status.normal && t.Flag == Models.Config.FTeamFlag.country).OrderBy(t=>t.OrderNum).Select(t => new ResFB.Team
+                {
+                    Id = t.Id,
+                    Name = t.Name,
+                }).ToList();
+
+                return Json(new { code = 20000, status = "success", msg = "获取成功", content = countries });
+            }
+            catch (Exception ex)
+            {
+                Helper.LogHelper.WriteErrorLog(ex);
+                return Json(new { status = "fail", msg = "服务器内部错误" });
+            }
+        }
+
         /// <summary>
         /// 获取球队树列表
         /// </summary>
@@ -31,7 +57,7 @@ namespace WebApi.Controllers.Football
                     OrderNum = t.OrderNum,
                 }).ToList();
                 
-                return Json(new { status = "success", msg = "获取成功", content = TeamTreeHelper(Guid.Empty, teams).Children });
+                return Json(new { code = 20000, status = "success", msg = "获取成功", content = TeamTreeHelper(Guid.Parse("00000000-0000-0000-0001-000000000000"), teams).Children });
             }
             catch (Exception ex)
             {
@@ -40,7 +66,32 @@ namespace WebApi.Controllers.Football
             }
         }
 
+        /// <summary>
+        /// 获取联赛树列表
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        public IHttpActionResult GetLeagueTree()
+        {
+            try
+            {
 
+                var teams = db.FT_Team.Where(t => t.Status == Models.Config.Status.normal && t.Flag != Models.Config.FTeamFlag.team).Select(t => new ResFB.Team
+                {
+                    Id = t.Id,
+                    PId = t.PId,
+                    Name = t.Name,
+                    OrderNum = t.OrderNum,
+                }).ToList();
+
+                return Json(new { code = 20000, status = "success", msg = "获取成功", content = TeamTreeHelper(Guid.Parse("00000000-0000-0000-0001-000000000000"), teams).Children });
+            }
+            catch (Exception ex)
+            {
+                Helper.LogHelper.WriteErrorLog(ex);
+                return Json(new { status = "fail", msg = "服务器内部错误" });
+            }
+        }
 
 
         /// <summary>
@@ -67,12 +118,14 @@ namespace WebApi.Controllers.Football
 
             try
             {
-                var teams = db.FT_Team.AsNoTracking().Where(t => t.PId == pId && t.Status != Models.Config.Status.deleted).Select(t=>new { 
+                var teams = db.FT_Team.AsNoTracking().Where(t => t.PId == pId && t.Status != Models.Config.Status.deleted).OrderBy(t => t.OrderNum).Select(t=>new { 
                     t.Id,
                     t.PId,
                     t.Name,
                     t.EName,
                     t.Status,
+                    t.Flag,
+                    t.OrderNum,
                     Player = db.FT_Player.Where(p=>teamIds.Contains(p.Team) && p.Status != Models.Config.Status.deleted).Count(),
                     Match = db.FT_Match.Where(m=>teamIds.Contains(m.HomeTeam) || teamIds.Contains(m.GuestTeam)).Count(),
                     HasChildren = db.FT_Team.Where(ft=>ft.PId == t.Id && ft.Status != Models.Config.Status.deleted).Any()
@@ -102,7 +155,7 @@ namespace WebApi.Controllers.Football
 
                 if (pTeam == null || pTeam.Flag == Models.Config.FTeamFlag.team)
                 {
-                    return Json(new { status = "fail", msg = "父级非法" });
+                    return Json(new { code = 20000, status = "fail", msg = "父级非法" });
                 }
                 DataBase.FT_Team teamDB = new DataBase.FT_Team
                 {
@@ -119,18 +172,18 @@ namespace WebApi.Controllers.Football
                 try
                 {
                     await db.SaveChangesAsync();
-                    return Json(new { status = "success", msg = "保存成功" });
+                    return Json(new { code = 20000, status = "success", msg = "保存成功" });
                 }
                 catch (Exception ex)
                 {
                     Helper.LogHelper.WriteErrorLog(ex);
-                    return Json(new { status = "fail", msg = "保存失败" });
+                    return Json(new { code = 20000, status = "fail", msg = "保存失败" });
                 }
 
             }
             else
             {
-                return Json(new { status = "fail", msg = "请求参数错误" });
+                return Json(new { code = 20000, status = "fail", msg = "请求参数错误" });
             }
         }
 
@@ -150,7 +203,7 @@ namespace WebApi.Controllers.Football
 
                 if (team == null || pTeam == null)
                 {
-                    return Json(new { status = "fail", msg = "Id非法" });
+                    return Json(new { code = 20000, status = "fail", msg = "Id非法" });
                 }
                 team.Id = (Guid)football.Id;
                 team.PId = football.PId;
@@ -164,18 +217,18 @@ namespace WebApi.Controllers.Football
                 try
                 {
                     await db.SaveChangesAsync();
-                    return Json(new { status = "success", msg = "修改成功" });
+                    return Json(new { code = 20000, status = "success", msg = "修改成功" });
                 }
                 catch (Exception ex)
                 {
                     Helper.LogHelper.WriteErrorLog(ex);
-                    return Json(new { status = "fail", msg = "修改失败" });
+                    return Json(new { code = 20000, status = "fail", msg = "修改失败" });
                 }
 
             }
             else
             {
-                return Json(new { status = "fail", msg = "请求参数错误" });
+                return Json(new { code = 20000, status = "fail", msg = "请求参数错误" });
             }
         }
 
@@ -194,7 +247,7 @@ namespace WebApi.Controllers.Football
 
                 if (team == null)
                 {
-                    return Json(new { status = "fail", msg = "Id非法" });
+                    return Json(new { code = 20000, status = "fail", msg = "Id非法" });
                 }
 
                 team.Status = updateStatus.Status;
@@ -202,7 +255,7 @@ namespace WebApi.Controllers.Football
                 if (updateStatus.Status != Models.Config.Status.normal)
                 {
                     //获得下属所有球队Id,不包含已删除的
-                    var teamIds = Factory.TeamFactory.GetBelongTeams(updateStatus.Id, Models.Config.Status.deleted, db);
+                    var teamIds = Factory.TeamFactory.GetBelongs(updateStatus.Id, Models.Config.Status.deleted, db);
                     if(teamIds.Any())
                     {
                         foreach (var belong in db.FT_Team.Where(t => teamIds.Contains(t.Id)))
@@ -217,17 +270,17 @@ namespace WebApi.Controllers.Football
                 try
                 {
                     await db.SaveChangesAsync();
-                    return Json(new { status = "success", msg = "修改成功" });
+                    return Json(new { code = 20000, status = "success", msg = "修改成功" });
                 }
                 catch (Exception ex)
                 {
                     Helper.LogHelper.WriteErrorLog(ex);
-                    return Json(new { status = "fail", msg = "修改失败" });
+                    return Json(new { code = 20000, status = "fail", msg = "修改失败" });
                 }
             }
             else
             {
-                return Json(new { status = "fail", msg = "请求参数错误" });
+                return Json(new { code = 20000, status = "fail", msg = "请求参数错误" });
             }
         }
 
@@ -242,7 +295,7 @@ namespace WebApi.Controllers.Football
             var team = await db.FT_Team.FindAsync(id);
             if (team == null || team.Status == Models.Config.Status.deleted || team.Flag != Models.Config.FTeamFlag.team)
             {
-                return Json(new { status = "fail", msg = "查询为空" });
+                return Json(new { code = 20000, status = "fail", msg = "查询为空" });
             }
             var results = db.FT_Team.Where(t => t.Id == id).Select(t => new {
                 t.Id,
@@ -252,7 +305,7 @@ namespace WebApi.Controllers.Football
                 //当前球队比赛情况
                 Match = db.FT_Match.Where(m => m.HomeTeam == id || m.GuestTeam == id).Select(m => new { m.HomeScore, m.GuestScore, HomeTeam = m.FT_Team_Home.Name,GuestTeam = m.FT_Team_Guest.Name })
             });
-            return Json(new { status = "success", msg = "查询成功", content = results });
+            return Json(new { code = 20000, status = "success", msg = "查询成功", content = results });
         }
 
         /// <summary>

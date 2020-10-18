@@ -17,59 +17,30 @@ namespace WebApi
         public static void Register(HttpConfiguration config)
         {
             // Web API 配置和服务
-            // 将 Web API 配置为仅使用不记名令牌身份验证。
-            //config.SuppressDefaultHostAuthentication();
-            //config.Filters.Add(new HostAuthenticationFilter(OAuthDefaults.AuthenticationType));
-            //config.Filters.Add(new WebApiProfilingActionFilter());
-            // Web API 路由
-
             //var jsonFormatter = new JsonMediaTypeFormatter();
             //config.Services.Replace(typeof(IContentNegotiator), new JsonContentNegotiator(jsonFormatter));
-
-            //注册支持namespace的HttpControllerSelector，替换默认DefaultHttpControllerSelector
             config.Services.Replace(typeof(IHttpControllerSelector), new NamespaceSelector(config));
 
-            //Web API 启用特性路由
+            // Web API 路由
             config.MapHttpAttributeRoutes();
 
-            //config.Routes.MapHttpRoute(
-            //      name: "Default",
-            //    routeTemplate: "{controller}/{action}/{id}",
-            //    defaults: new { controller = "swagger", action = "ui", id = "index" }
-            //);
 
-            //config.Routes.MapHttpRoute(
-            //    name: "MiniApi",
-            //    routeTemplate: "api/mini/{controller}/{action}/{id}",
-            //    defaults: new
-            //    {
-            //        id = RouteParameter.Optional,
-            //        namespaces = new[] { "WebApi.Controllers.Mini" }
-            //    }
-            //    );
+
             config.Routes.MapHttpRoute(
                 name: "DefaultApi",
                 routeTemplate: "api/manage/{controller}/{action}",
                 defaults: new
                 {
                     id = RouteParameter.Optional,
-                    namespace_name = new string[] { "WebApi.Controllers.Manage" }
+                    namespaces = new [] { "WebApi.Controllers.Manage" }
                     //namespaces = new[] { "WebApi.Controllers.Football", "WebApi.Controllers.Manage" }
                 }
               
                 );
-            //config.Routes.IgnoreRoute(
-            //    routeName: "ManageApi",
-            //    routeTemplate: "api/manage/{controller}/{action}/{id}",
-            //    constraints: new
-            //    {
-            //        id = RouteParameter.Optional,
-            //        namespaces = new[] { "WebApi.Controllers.Football" }
-            //    }
-            //    );
+
             config.Routes.MapHttpRoute(
                 name: "FootballApi",
-                routeTemplate: "api/football/{controller}/{action}/{id}",
+                routeTemplate: "api/football/{controller}/{action}",
                 defaults: new
                 {
                     id = RouteParameter.Optional,
