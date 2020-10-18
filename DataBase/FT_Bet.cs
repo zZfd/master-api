@@ -27,7 +27,7 @@ namespace DataBase
 
         public decimal Profit { get; set; }
 
-        public float Odds { get; set; }
+        public double Odds { get; set; }
 
         [Required]
         [StringLength(50)]

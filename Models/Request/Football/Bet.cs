@@ -8,7 +8,7 @@ namespace WebApi.Models.Request.Football
 {
     public class Bet
     {
-        public Guid Id { get; set; }
+        public Guid? Id { get; set; }
 
         [Required(ErrorMessage = "请选择比赛")]
         public Guid Match { get; set; }
@@ -29,7 +29,7 @@ namespace WebApi.Models.Request.Football
         public decimal Profit { get; set; }
 
         [Required(ErrorMessage = "请输入当前赔率")]
-        public float Odds { get; set; }
+        public double Odds { get; set; }
 
         public Guid Attachment { get; set; }
 
@@ -43,30 +43,24 @@ namespace WebApi.Models.Request.Football
 
     public class ListBet
     {
-        public Guid Team { get; set; }
+        public Guid? Team { get; set; }
 
-        public Guid Match { get; set; }
+        //public Guid? Match { get; set; }
 
 
-        public decimal  MinMoney 
-        {
-            get { return MinMoney; }
-            set { MinMoney = -1; }
-        }
+        public decimal  MinMoney { get; set; }
 
-        public decimal MaxMoney
-        {
-            get { return MaxMoney; }
-            set { MaxMoney = -1; }
-        }
 
-        public DateTime StartTime { get; set; }
-        public DateTime EndTime { get; set; }
+        public decimal MaxMoney { get; set; }
+
+
+        public DateTime? StartTime { get; set; }
+        public DateTime? EndTime { get; set; }
 
 
         public string Platform { get; set; }
 
-        public short? IsSuccess { get; set; }
+        public short IsSuccess { get; set; }
       
 
         [Required(ErrorMessage = "请选择当前页")]

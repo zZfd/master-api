@@ -8,8 +8,6 @@ using System.Web.Http;
 
 namespace WebApi.Controllers.Manage
 {
-    [RoutePrefix("manage/")]
-
     public class AttachmentController : ApiController
     {
         private readonly DataBase.DB db = new DataBase.DB();
@@ -54,15 +52,15 @@ namespace WebApi.Controllers.Manage
                     var fileSize = files[0].ContentLength;
                     if (fileSize > 10485760)
                     {
-                        return Json(new { status = "fail", msg = "请上传10M以内的文件!" });
+                        return Json(new { code = 20000, status = "fail", msg = "请上传10M以内的文件!" });
                     }
 
                     //保存附件
                     if (!Directory.Exists(saveFilePath)) Directory.CreateDirectory(saveFilePath);
-                    //saveFilePath 为文件的物理路径 --- /根路径/时间/上传人ID/文件名.扩展名
-                    files[0].SaveAs(saveFilePath + "/" + files[0].FileName + fileExtension);
+                    //saveFilePath 为文件的物理路径 --- /根路径/时间/上传人ID/附件Id.扩展名
+                    files[0].SaveAs(saveFilePath + "/" + attachment.Id + fileExtension);
 
-                    return Json(new { status = "success", msg = "上传成功!", content = attachment.Id });
+                    return Json(new { code = 20000, status = "success", msg = "上传成功!", content = attachment.Id });
                 }
                 catch(Exception ex)
                 {
@@ -73,24 +71,23 @@ namespace WebApi.Controllers.Manage
             }
             else
             {
-                return Json(new { status = "fail", msg = "上传文件为空!" });
+                return Json(new { code = 20000,status = "fail", msg = "上传文件为空!" });
             }
         }
 
 
         [HttpGet]
-        [AllowAnonymous]
-        public async void Download(string Code)
+        public async void Download(string attachmentId)
         {
-            Guid code = Helper.TypeHelper.ToGuid(Code);
+            Guid code = Helper.TypeHelper.ToGuid(attachmentId);
 
             var attachment = await db.Attachments.FindAsync(code);
             if (attachment == null) return;
 
             string filepath = ConfigurationManager.AppSettings["FilePath"].ToString();
             if (Directory.Exists(filepath) == false) Directory.CreateDirectory(filepath);         //如果不存在就创建file文件夹
-            filepath = filepath + "/" + attachment.UpTime.ToString("yyyyMMdd") + "/" + attachment.UpAccount.ToString("N") + "/" + attachment.FileName + attachment.FileExt;
-            //根路径+年月日+上传人Id+附件名.png
+            filepath = filepath + "/" + attachment.UpTime.ToString("yyyyMMdd") + "/" + attachment.UpAccount.ToString("N") + "/" + attachment.Id + attachment.FileExt;
+            //根路径+年月日+上传人Id+附件Id.png
             System.IO.FileInfo fileInfo = new System.IO.FileInfo(filepath);
             if (fileInfo.Exists == true)
             {
