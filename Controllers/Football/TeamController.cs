@@ -118,20 +118,41 @@ namespace WebApi.Controllers.Football
 
             try
             {
-                var teams = db.FT_Team.AsNoTracking().Where(t => t.PId == pId && t.Status != Models.Config.Status.deleted).OrderBy(t => t.OrderNum).Select(t=>new { 
-                    t.Id,
-                    t.PId,
-                    t.Name,
-                    t.EName,
-                    t.Status,
-                    t.Flag,
-                    t.OrderNum,
-                    Player = db.FT_Player.Where(p=>teamIds.Contains(p.Team) && p.Status != Models.Config.Status.deleted).Count(),
-                    Match = db.FT_Match.Where(m=>teamIds.Contains(m.HomeTeam) || teamIds.Contains(m.GuestTeam)).Count(),
-                    HasChildren = db.FT_Team.Where(ft=>ft.PId == t.Id && ft.Status != Models.Config.Status.deleted).Any()
-
-                });
-                return Json(new { code = 20000, status = "success",msg = "获取成功",data = teams});
+                if (team != null && team.Flag == Models.Config.FTeamFlag.league)
+                {
+                    // 查找球队
+                    var teams = db.FT_Team.AsNoTracking().Where(t => t.PId == pId && t.Status != Models.Config.Status.deleted).OrderBy(t => t.OrderNum).Select(t => new {
+                        t.Id,
+                        t.PId,
+                        t.Name,
+                        t.EName,
+                        t.Status,
+                        t.Flag,
+                        t.OrderNum,
+                        Player = db.FT_Player.Where(p =>p.Team == t.Id && p.Status != Models.Config.Status.deleted).Count(),
+                        Match = db.FT_Match.Where(m => m.HomeTeam == t.Id || m.GuestTeam == t.Id).Count(),
+                        HasChildren = false
+                    });
+                    return Json(new { code = 20000, status = "success", msg = "获取成功", data = teams });
+                }
+                else
+                {
+                    // 查找国家和联赛
+                    var teams = db.FT_Team.AsNoTracking().Where(t => t.PId == pId && t.Status != Models.Config.Status.deleted).OrderBy(t => t.OrderNum).Select(t => new {
+                        t.Id,
+                        t.PId,
+                        t.Name,
+                        t.EName,
+                        t.Status,
+                        t.Flag,
+                        t.OrderNum,
+                        Player = db.FT_Player.Where(p => teamIds.Contains(p.Team) && p.Status != Models.Config.Status.deleted).Count(),
+                        Match = db.FT_Match.Where(m => teamIds.Contains(m.HomeTeam) || teamIds.Contains(m.GuestTeam)).Count(),
+                        HasChildren = db.FT_Team.Where(ft => ft.PId == t.Id && ft.Status != Models.Config.Status.deleted).Any()
+                    });
+                    return Json(new { code = 20000, status = "success", msg = "获取成功", data = teams });
+                }
+               
             }
             catch (Exception ex)
             {

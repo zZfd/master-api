@@ -17,11 +17,12 @@ namespace WebApi.Controllers.Manage
         /// 返回附件Id
         /// </summary>
         /// <returns></returns>
-        public async Task<IHttpActionResult> UploadAttachment()
+        public async Task<IHttpActionResult> Upload()
         {
-            Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
 
+            // Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
 
+            Guid userId = Guid.Parse("00000000-0000-0001-0000-000000000000");
             var files = HttpContext.Current.Request.Files;
             if (files != null && files.Count > 0)
             {

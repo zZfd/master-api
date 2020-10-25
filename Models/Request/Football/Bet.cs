@@ -41,6 +41,41 @@ namespace WebApi.Models.Request.Football
         public short IsSuccess { get; set; }
     }
 
+    public class Bet2
+    {
+        public Guid? Id { get; set; }
+
+        [Required(ErrorMessage = "请选择比赛")]
+        public string Match { get; set; }
+
+        [Required(ErrorMessage = "请选择球队")]
+        public string Team { get; set; }
+
+        [Required(ErrorMessage = "请输入投注信息")]
+        [StringLength(200, MinimumLength = 5)]
+        public string Remarks { get; set; }
+
+        [Required(ErrorMessage = "请选择投注时间")]
+        public DateTime Time { get; set; }
+
+        [Required(ErrorMessage = "请输入投注金额")]
+        public decimal Money { get; set; }
+
+        public decimal Profit { get; set; }
+
+        [Required(ErrorMessage = "请输入当前赔率")]
+        public double Odds { get; set; }
+
+        public Guid Attachment { get; set; }
+
+        [Required(ErrorMessage = "请输入投注平台")]
+        public string Platform { get; set; }
+
+        [Required(ErrorMessage = "请选择状态")]
+        [Range(minimum: Models.Config.Status.deleted, maximum: Models.Config.Status.forbidden)]
+        public short IsSuccess { get; set; }
+    }
+
     public class ListBet
     {
         public Guid? Team { get; set; }

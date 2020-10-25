@@ -109,9 +109,9 @@ namespace WebApi.Controllers.Football
                     Time = bet.Time,
                     Money = bet.Money,
                     Odds = bet.Odds,
-                    Profit = 0,
+                    Profit = bet.Profit,
                     Platform = bet.Platform,
-                    IsSuccess = Models.Config.Status.forbidden
+                    IsSuccess = bet.IsSuccess
                 };
                 //保存按钮 --> 上传附件（状态禁用） --> 保存投注 （修改附件状态为正常）
                 attachmentDB.Status = Models.Config.Status.normal;
@@ -120,6 +120,52 @@ namespace WebApi.Controllers.Football
                 {
                     await db.SaveChangesAsync();
                     return Json( new { code = 20000, status = "success", msg = "保存成功" });
+                }
+                catch (Exception ex)
+                {
+                    Helper.LogHelper.WriteErrorLog(ex);
+                    return Json(new { status = "fail", msg = "服务器错误" });
+                }
+            }
+            else
+            {
+                return Json(new { code = 20000, status = "fail", msg = "请求参数错误", content = ModelState });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IHttpActionResult> SaveBet2(ReqFB.Bet2 bet)
+        {
+            if (ModelState.IsValid)
+            {
+       
+
+                var attachmentDB = await db.Attachments.FindAsync(bet.Attachment);
+                if (attachmentDB == null)
+                {
+                    return Json(new { code = 20000, status = "fail", msg = "附件不存在" });
+                }
+                DataBase.FT_Bet2 betDB = new DataBase.FT_Bet2
+                {
+                    Id = Guid.NewGuid(),
+                    Match = bet.Match,
+                    Team = bet.Team,
+                    Remarks = bet.Remarks,
+                    Attachment = bet.Attachment,
+                    Time = bet.Time,
+                    Money = bet.Money,
+                    Odds = bet.Odds,
+                    Profit = bet.Profit,
+                    Platform = bet.Platform,
+                    IsSuccess = bet.IsSuccess
+                };
+                //保存按钮 --> 上传附件（状态禁用） --> 保存投注 （修改附件状态为正常）
+                attachmentDB.Status = Models.Config.Status.normal;
+                db.Entry(betDB).State = System.Data.Entity.EntityState.Added;
+                try
+                {
+                    await db.SaveChangesAsync();
+                    return Json(new { code = 20000, status = "success", msg = "保存成功" });
                 }
                 catch (Exception ex)
                 {
@@ -170,7 +216,7 @@ namespace WebApi.Controllers.Football
                 betDB.Time = bet.Time;
                 betDB.Money = bet.Money;
                 betDB.Odds = bet.Odds;
-                betDB.Profit = betDB.Profit;
+                betDB.Profit = bet.Profit;
                 betDB.Platform = bet.Platform;
                 betDB.IsSuccess = bet.IsSuccess;
                 if (betDB.Attachment != bet.Attachment)
@@ -223,7 +269,7 @@ namespace WebApi.Controllers.Football
                 Team = betDB.Team,
                 Time = betDB.Time,
                 Platform = betDB.Platform,
-                Status = betDB.IsSuccess,
+                IsSuccess = betDB.IsSuccess,
                 Money = betDB.Money,
                 Profit = betDB.Profit,
                 Odds = betDB.Odds,

@@ -147,7 +147,9 @@ namespace WebApi.Controllers.Football
                         Country = p.Country,
                         Flag = p.Flag
                     }).OrderBy(s => s.Status);
-                    return Json(new { code = 20000, status = "success", msg = "查询成功", content = Helper.PaginationHelper<ResFB.Player>.Paging(results,query.PageIndex,query.PageSize) });
+                    var res = Helper.PaginationHelper<ResFB.Player>.Paging(results, query.PageIndex, query.PageSize);
+
+                    return Json(new { code = 20000, status = "success", msg = "查询成功", content = new { data = res,total = res.Total} });
                 }
                 else
                 {

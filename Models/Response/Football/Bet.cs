@@ -14,7 +14,7 @@ namespace WebApi.Models.Response.Football
 
         public DateTime Time { get; set; }
         public string Platform { get; set; }
-        public short Status { get; set; }
+        public short IsSuccess { get; set; }
 
         public decimal Money { get; set; }
 

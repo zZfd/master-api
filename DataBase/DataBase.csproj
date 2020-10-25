@@ -123,6 +123,7 @@
     <Compile Include="Attachments.cs" />
     <Compile Include="DB.cs" />
     <Compile Include="FT_Bet.cs" />
+    <Compile Include="FT_Bet2.cs" />
     <Compile Include="FT_Match.cs" />
     <Compile Include="FT_Match_Player.cs" />
     <Compile Include="FT_Player.cs" />

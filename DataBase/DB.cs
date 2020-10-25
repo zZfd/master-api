@@ -14,6 +14,8 @@ namespace DataBase
 
         public virtual DbSet<Attachments> Attachments { get; set; }
         public virtual DbSet<FT_Bet> FT_Bet { get; set; }
+        public virtual DbSet<FT_Bet2> FT_Bet2 { get; set; }
+
         public virtual DbSet<FT_Match> FT_Match { get; set; }
         public virtual DbSet<FT_Player> FT_Player { get; set; }
         public virtual DbSet<FT_Score> FT_Score { get; set; }
@@ -52,11 +54,17 @@ namespace DataBase
                 .HasForeignKey(e => e.Attachment)
                 .WillCascadeOnDelete(false);
 
-            modelBuilder.Entity<FT_Bet>()
+            modelBuilder.Entity<Attachments>()
+               .HasMany(e => e.FT_Bet2)
+               .WithRequired(e => e.Attachments)
+               .HasForeignKey(e => e.Attachment)
+               .WillCascadeOnDelete(false);
+
+            modelBuilder.Entity<FT_Bet2>()
                 .Property(e => e.Remarks)
                 .IsUnicode(false);
 
-            modelBuilder.Entity<FT_Bet>()
+            modelBuilder.Entity<FT_Bet2>()
                 .Property(e => e.Platform)
                 .IsUnicode(false);
 
