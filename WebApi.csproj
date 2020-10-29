@@ -166,6 +166,7 @@
     <Compile Include="Controllers\Manage\MenuController.cs" />
     <Compile Include="Controllers\Manage\OrgController.cs" />
     <Compile Include="Controllers\Manage\RoleController.cs" />
+    <Compile Include="Controllers\Mini\MemberController.cs" />
     <Compile Include="Factory\CommonFactory.cs" />
     <Compile Include="Factory\OrgFactory.cs" />
     <Compile Include="Factory\TeamFactory.cs" />
@@ -208,7 +209,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Controllers\Mini\" />
     <Folder Include="Models\Request\Mini\Member\" />
   </ItemGroup>
   <ItemGroup>

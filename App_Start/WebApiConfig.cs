@@ -48,6 +48,16 @@ namespace WebApi
                 }
                 );
 
+            config.Routes.MapHttpRoute(
+                name: "MiniApi",
+                routeTemplate: "api/mini/{controller}/{action}",
+                defaults: new
+                {
+                    id = RouteParameter.Optional,
+                    namespaces = new[] { "WebApi.Controllers.Mini" }
+                }
+                );
+
             //config.Routes.IgnoreRoute(
             //    routeName: "FootballApi",
             //    routeTemplate: "api/manage/{controller}/{action}/{id}",
