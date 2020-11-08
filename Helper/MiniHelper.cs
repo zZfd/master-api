@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Helper
 {
-    public static class MiniHelper
+    public  class MiniLoginHelper
     {
         /// <summary>  
         /// 获取链接返回数据  
@@ -15,7 +15,7 @@ namespace Helper
         /// <param name="Url">链接</param>  
         /// <param name="type">请求类型</param>  
         /// <returns></returns>  
-        public static string GetUrltoHtml(string Url, string type)
+        public  string GetUrltoHtml(string Url, string type)
         {
             try
             {
@@ -36,8 +36,8 @@ namespace Helper
         }
         #region 微信小程序用户数据解密  
 
-        public static string AesKey;
-        public static string AesIV;
+        public  string AesKey;
+        public  string AesIV;
 
         /// <summary>  
         /// AES解密  
@@ -46,7 +46,7 @@ namespace Helper
         /// <param name="AesKey">key</param>  
         /// <param name="AesIV">向量128</param>  
         /// <returns name="result">解密后的字符串</returns>  
-        public static string AESDecrypt(string inputdata)
+        public  string AESDecrypt(string inputdata)
         {
             try
             {

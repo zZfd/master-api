@@ -50,8 +50,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DB.cs" />
+    <Compile Include="Article.cs" />
+    <Compile Include="Attachment.cs" />
+    <Compile Include="Bet.cs" />
+    <Compile Include="Collection.cs" />
+    <Compile Include="Log.cs" />
     <Compile Include="Member.cs" />
+    <Compile Include="MiniDB.cs" />
+    <Compile Include="Order.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

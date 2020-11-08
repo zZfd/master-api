@@ -166,7 +166,7 @@
     <Compile Include="Controllers\Manage\MenuController.cs" />
     <Compile Include="Controllers\Manage\OrgController.cs" />
     <Compile Include="Controllers\Manage\RoleController.cs" />
-    <Compile Include="Controllers\Mini\MemberController.cs" />
+    <Compile Include="Controllers\Mini\MinMemberController.cs" />
     <Compile Include="Factory\CommonFactory.cs" />
     <Compile Include="Factory\OrgFactory.cs" />
     <Compile Include="Factory\TeamFactory.cs" />
@@ -179,6 +179,7 @@
     <Compile Include="Models\Request\Football\Bet.cs" />
     <Compile Include="Models\Request\Football\Match.cs" />
     <Compile Include="Models\Request\Football\Player.cs" />
+    <Compile Include="Models\Request\Mini\Member.cs" />
     <Compile Include="Models\Response\Common\IdEName.cs" />
     <Compile Include="Models\Request\Common\UpdateStatus.cs" />
     <Compile Include="Models\Request\Setting.cs" />
@@ -190,12 +191,12 @@
     <Compile Include="Models\Response\Football\Bet.cs" />
     <Compile Include="Models\Response\Football\Match.cs" />
     <Compile Include="Models\Response\Football\Player.cs" />
-    <Compile Include="Models\Response\Mini\Menu\MenuTree.cs" />
     <Compile Include="Models\Response\Football\Team.cs" />
     <Compile Include="Models\Response\Manage\Member.cs" />
     <Compile Include="Models\Response\Manage\Menu.cs" />
     <Compile Include="Models\Response\Manage\Org.cs" />
     <Compile Include="Models\Response\Manage\Role.cs" />
+    <Compile Include="Models\Response\Mini\Member.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -209,7 +210,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Models\Request\Mini\Member\" />
+    <Folder Include="Factory\Mini\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="DataBase\DataBase.csproj">
@@ -219,6 +220,10 @@
     <ProjectReference Include="Helper\Helper.csproj">
       <Project>{bb052917-8fe3-4a5b-94bd-405f34b75057}</Project>
       <Name>Helper</Name>
+    </ProjectReference>
+    <ProjectReference Include="MiniDB\MiniDB.csproj">
+      <Project>{6825e70f-04b4-485f-ab46-4aca273081d3}</Project>
+      <Name>MiniDB</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
