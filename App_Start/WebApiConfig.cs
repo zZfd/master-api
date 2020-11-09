@@ -26,27 +26,27 @@ namespace WebApi
 
 
 
-            //config.Routes.MapHttpRoute(
-            //    name: "DefaultApi",
-            //    routeTemplate: "api/manage/{controller}/{action}",
-            //    defaults: new
-            //    {
-            //        id = RouteParameter.Optional,
-            //        namespaces = new [] { "WebApi.Controllers.Manage" }
-            //        //namespaces = new[] { "WebApi.Controllers.Football", "WebApi.Controllers.Manage" }
-            //    }
-              
-            //    );
+            config.Routes.MapHttpRoute(
+                name: "DefaultApi",
+                routeTemplate: "api/manage/{controller}/{action}",
+                defaults: new
+                {
+                    id = RouteParameter.Optional,
+                    namespaces = new[] { "WebApi.Controllers.Manage" }
+                    //namespaces = new[] { "WebApi.Controllers.Football", "WebApi.Controllers.Manage" }
+                }
 
-            //config.Routes.MapHttpRoute(
-            //    name: "FootballApi",
-            //    routeTemplate: "api/football/{controller}/{action}",
-            //    defaults: new
-            //    {
-            //        id = RouteParameter.Optional,
-            //        namespaces = new[] { "WebApi.Controllers.Football" }
-            //    }
-            //    );
+                );
+
+            config.Routes.MapHttpRoute(
+                name: "FootballApi",
+                routeTemplate: "api/football/{controller}/{action}",
+                defaults: new
+                {
+                    id = RouteParameter.Optional,
+                    namespaces = new[] { "WebApi.Controllers.Football" }
+                }
+                );
 
             config.Routes.MapHttpRoute(
                 name: "MiniApi",
