@@ -166,6 +166,7 @@
     <Compile Include="Controllers\Manage\MenuController.cs" />
     <Compile Include="Controllers\Manage\OrgController.cs" />
     <Compile Include="Controllers\Manage\RoleController.cs" />
+    <Compile Include="Controllers\Mini\ArticleController.cs" />
     <Compile Include="Controllers\Mini\MinMemberController.cs" />
     <Compile Include="Factory\CommonFactory.cs" />
     <Compile Include="Factory\OrgFactory.cs" />
@@ -179,6 +180,7 @@
     <Compile Include="Models\Request\Football\Bet.cs" />
     <Compile Include="Models\Request\Football\Match.cs" />
     <Compile Include="Models\Request\Football\Player.cs" />
+    <Compile Include="Models\Request\Mini\Article.cs" />
     <Compile Include="Models\Request\Mini\Member.cs" />
     <Compile Include="Models\Response\Common\IdEName.cs" />
     <Compile Include="Models\Request\Common\UpdateStatus.cs" />
@@ -196,6 +198,7 @@
     <Compile Include="Models\Response\Manage\Menu.cs" />
     <Compile Include="Models\Response\Manage\Org.cs" />
     <Compile Include="Models\Response\Manage\Role.cs" />
+    <Compile Include="Models\Response\Mini\Article.cs" />
     <Compile Include="Models\Response\Mini\Member.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

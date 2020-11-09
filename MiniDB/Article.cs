@@ -32,7 +32,7 @@ namespace MiniDB
 
         [Required]
         [StringLength(100)]
-        public string Recommand { get; set; }
+        public string Recommend { get; set; }
 
         [Column(TypeName = "text")]
         public string Analysis { get; set; }
