@@ -15,7 +15,7 @@ namespace WebApi.Controllers.Mini
     {
 
         private const string TOKEN = "ZFDYES";
-        private MiniDB.MiniDB DB = new MiniDB.MiniDB();
+        private readonly MiniDB.MiniDB DB = new MiniDB.MiniDB();
 
         /// <summary>
         /// 添加文章
@@ -54,7 +54,7 @@ namespace WebApi.Controllers.Mini
                     Money = article.money,
                     Analysis = article.analysis,
                     Time = DateTime.Now,
-                    Status = Models.Config.Status.normal
+                    Status = Models.Config.Status.forbidden // 文章发布后需要审核
                 };
                 try
                 {
@@ -74,6 +74,62 @@ namespace WebApi.Controllers.Mini
             }
         }
 
+        /// <summary>
+        /// 修改（审核，删除）文章
+        /// </summary>
+        /// <param name="article"></param>
+        /// <returns></returns>
+        [HttpPut]
+        public async Task<IHttpActionResult> Update(EntityReq.Article article)
+        {
 
+            if (ModelState.IsValid)
+            {
+                Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
+                if (userId == Guid.Empty)
+                {
+                    return Json(new { statusCode = HttpStatusCode.Unauthorized, msg = "请先登录" });
+                }
+                var userDb = await DB.Member.FindAsync(userId);
+                // 权限下一个版本再做全
+                if (userDb == null || !userDb.Phone.Equals("13776050390"))
+                {
+                    return Json(new { statusCode = HttpStatusCode.Forbidden, msg = "用户不具备权限" });
+                }
+
+                if (!userDb.Expert && article.money > 0)
+                {
+                    return Json(new { statusCode = HttpStatusCode.Forbidden, msg = "请先成为创作者" });
+                }
+
+                MiniDB.Article articleDb = new MiniDB.Article
+                {
+                    Id = Guid.NewGuid(),
+                    Title = article.title,
+                    Author = userId,
+                    Match = article.match,
+                    Recommend = article.recommend,
+                    Money = article.money,
+                    Analysis = article.analysis,
+                    Time = DateTime.Now,
+                    Status = Models.Config.Status.normal
+                };
+                try
+                {
+                    DB.Article.Add(articleDb);
+                    await DB.SaveChangesAsync();
+                    return Json(new { statusCode = HttpStatusCode.Created, msg = "添加成功", content = articleDb.Id }); // 回传id，用户附件保存
+                }
+                catch
+                {
+                    return Json(new { statusCode = HttpStatusCode.InternalServerError, msg = "服务器内部错误" });
+                }
+
+            }
+            else
+            {
+                return Json(new { statusCode = HttpStatusCode.BadRequest, msg = ModelState.Values }); // 回复错误信息
+            }
+        }
     }
 }

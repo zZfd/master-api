@@ -8,6 +8,9 @@ namespace WebApi.Models.Request.Mini
 {
     public class Article
     {
+        // 修改用Id
+        public Guid Id { get; set; }
+
         [Required]
         [StringLength(50)]
         // 标题
@@ -30,6 +33,9 @@ namespace WebApi.Models.Request.Mini
 
         // 分析
         public string analysis { get; set; }
+
+        // 审核
+        public short status { get; set; }
 
     }
 }
