@@ -11,36 +11,49 @@ namespace WebApi.Models.Request.Mini
     /// </summary>
     public class Bet
     {
-        public Guid Id { get; set; }
 
         [Required(ErrorMessage = "请选择比赛")]
-        public string Match { get; set; }
+        public string match { get; set; }
 
         [Required(ErrorMessage = "请选择球队")]
-        public string Team { get; set; }
+        public string team { get; set; }
 
         [Required(ErrorMessage = "请输入投注信息")]
         [StringLength(200, MinimumLength = 5)]
-        public string Remarks { get; set; }
+        public string remarks { get; set; }
 
         [Required(ErrorMessage = "请选择投注时间")]
-        public DateTime Time { get; set; }
+        public DateTime time { get; set; }
 
         [Required(ErrorMessage = "请输入投注金额")]
-        public decimal Money { get; set; }
+        public decimal money { get; set; }
 
-        public decimal Profit { get; set; }
+        public decimal profit { get; set; }
 
         [Required(ErrorMessage = "请输入当前赔率")]
-        public double Odds { get; set; }
+        public double odds { get; set; }
 
 
         [Required(ErrorMessage = "请输入投注平台")]
-        public string Platform { get; set; }
+        public string platform { get; set; }
 
         [Required(ErrorMessage = "请选择状态")]
-        [Range(minimum: Models.Config.Status.deleted, maximum: Models.Config.Status.forbidden)]
-        public short IsSuccess { get; set; }
+        public bool isSuccess { get; set; }
+    }
+
+    /// <summary>
+    /// 修改
+    /// </summary>
+    public class BetUpdate {
+        [Required(ErrorMessage = "请选择投注")]
+        public Guid id { get; set; }
+
+        [Required(ErrorMessage = "请输入盈利")]
+        public decimal profit { get; set; }
+
+        [Required(ErrorMessage = "请选择状态")]
+        public bool isSuccess { get; set; }
+
     }
 
     /// <summary>
@@ -65,13 +78,13 @@ namespace WebApi.Models.Request.Mini
         public decimal maxMoney { get; set; }
 
 
-        public DateTime? startTime { get; set; }
-        public DateTime? endTime { get; set; }
+        public DateTime startTime { get; set; }
+        public DateTime endTime { get; set; }
 
 
         public string platform { get; set; }
 
-        public short isSuccess { get; set; }
+        public bool? isSuccess { get; set; }
 
 
         public int pageIndex { get; set; }

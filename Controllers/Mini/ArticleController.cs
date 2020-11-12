@@ -316,9 +316,17 @@ namespace WebApi.Controllers.Mini
         {
             if (id != Guid.Empty)
             {
+                Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
                 var article = await DB.Article.FindAsync(id);
-                if (article != null) return Json(new { statusCode = HttpStatusCode.OK, msg = "查询成功", content = article });
-                else return Json(new { statusCode = HttpStatusCode.NoContent, msg = "查询为空" });
+                
+                if (article == null) return Json(new { statusCode = HttpStatusCode.NoContent, msg = "查询为空" });
+                // 收费文章
+                if (article.Money > 0 && DB.Order.FirstOrDefault(o => o.Member == userId && o.Article == id) == null)
+                {
+                    return Json(new { statusCode = HttpStatusCode.NoContent, msg = "查询为空" });
+                }
+                return Json(new { statusCode = HttpStatusCode.OK, msg = "查询成功", content = article });
+
             }
             else
             {

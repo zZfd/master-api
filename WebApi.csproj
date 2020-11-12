@@ -171,6 +171,7 @@
     <Compile Include="Controllers\Mini\ArticleController.cs" />
     <Compile Include="Controllers\Mini\MiniAttachmentController.cs" />
     <Compile Include="Controllers\Mini\MinMemberController.cs" />
+    <Compile Include="Controllers\Mini\OrderController.cs" />
     <Compile Include="Factory\CommonFactory.cs" />
     <Compile Include="Factory\Mini\LogHelper.cs" />
     <Compile Include="Factory\OrgFactory.cs" />
@@ -189,6 +190,7 @@
     <Compile Include="Models\Request\Mini\Collection.cs" />
     <Compile Include="Models\Request\Mini\Log.cs" />
     <Compile Include="Models\Request\Mini\Member.cs" />
+    <Compile Include="Models\Request\Mini\Order.cs" />
     <Compile Include="Models\Response\Common\IdEName.cs" />
     <Compile Include="Models\Request\Common\UpdateStatus.cs" />
     <Compile Include="Models\Request\Setting.cs" />
@@ -206,8 +208,10 @@
     <Compile Include="Models\Response\Manage\Org.cs" />
     <Compile Include="Models\Response\Manage\Role.cs" />
     <Compile Include="Models\Response\Mini\Article.cs" />
+    <Compile Include="Models\Response\Mini\Bet.cs" />
     <Compile Include="Models\Response\Mini\Collection.cs" />
     <Compile Include="Models\Response\Mini\Member.cs" />
+    <Compile Include="Models\Response\Mini\Order.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

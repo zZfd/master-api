@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Http;
 using EntityReq = WebApi.Models.Request.Mini;
 using EntityRes = WebApi.Models.Response.Mini;
@@ -13,221 +14,192 @@ namespace WebApi.Controllers.Mini
     public class MiniBetController : ApiController
     {
         private readonly MiniDB.MiniDB db = new MiniDB.MiniDB();
+        private const string TOKEN = "ZFDYES";
 
-        #region 筛选，暂时不用
-        //[HttpPost]
-        //public IHttpActionResult ListBets(EntityReq.ListBet param)
-        //{
-        //    if (ModelState.IsValid)
-        //    {
-        //        var bets = db.Bet.AsNoTracking().AsQueryable();
-        //        if (!string.IsNullOrWhiteSpace(param.team))
-        //        {
-        //            bets = bets.Where(b => b.Team == param.Team);
-        //        }
-        //        //if (param.Match != null)
-        //        //{
-        //        //    bets = bets.Where(b => b.Match == param.Match);
-        //        //}
-        //        if (param.MinMoney != -1)
-        //        {
-        //            bets = bets.Where(b => b.Money >= param.MinMoney);
-        //        }
-        //        if (param.MaxMoney != -1)
-        //        {
-        //            bets = bets.Where(b => b.Money <= param.MaxMoney);
-        //        }
+        /// <summary>
+        /// 筛选
+        /// </summary>
+        /// <param name="param"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public IHttpActionResult ListBets(EntityReq.ListBet param)
+        {
+            Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
 
-        //        if (param.StartTime != null)
-        //        {
-        //            bets = bets.Where(b => b.Time >= param.StartTime);
-        //        }
-        //        if (param.EndTime != null)
-        //        {
-        //            bets = bets.Where(b => b.Time <= param.EndTime);
-        //        }
+            var bets = db.Bet.AsNoTracking().Where(b => b.Member == userId && b.IsSuccess == param.isSuccess);
+            if (!string.IsNullOrWhiteSpace(param.team))
+            {
+                bets = bets.Where(b => b.Team.Contains(param.team));
+            }
+            if (!string.IsNullOrWhiteSpace(param.match))
+            {
+                bets = bets.Where(b => b.Match.Contains(param.match));
+            }
 
-        //        if (!string.IsNullOrWhiteSpace(param.Platform))
-        //        {
-        //            bets = bets.Where(b => b.Platform.Contains(param.Platform));
-        //        }
+            if (param.minMoney != 0)
+            {
+                bets = bets.Where(b => b.Money >= param.minMoney);
+            }
+            if (param.maxMoney != 0)
+            {
+                bets = bets.Where(b => b.Money <= param.maxMoney);
+            }
 
-        //        if (param.IsSuccess != -1)
-        //        {
-        //            bets = bets.Where(b => b.IsSuccess == param.IsSuccess);
-        //        }
-        //        if (bets.Any())
-        //        {
-        //            var results = bets.Select(b => new ResFB.Bet
-        //            {
-        //                Id = b.Id,
-        //                Match = b.FT_Match.FT_Team_Home.Name + "--" + b.FT_Match.FT_Team_Guest.Name,
-        //                Team = b.Team,
-        //                Time = b.Time,
-        //                Platform = b.Platform,
-        //                Status = b.IsSuccess
-        //            }).OrderBy(s=>s.Time);
-        //            return Json(new {code=20000, status = "success", msg = "查询成功", content = Helper.PaginationHelper<ResFB.Bet>.Paging(results,param.PageIndex,param.PageSize) });
-        //        }
-        //        else
-        //        {
-        //            return Json(new { code = 20000, status = "fail", msg = "查询为空" });
-        //        }
-        //    }
-        //    else
-        //    {
-        //        return Json(new { code = 20000, status = "fail", msg = "请求参数错误", content = ModelState });
-        //    }
-        //}
-        #endregion
+            if (param.startTime != DateTime.MinValue)
+            {
+                bets = bets.Where(b => b.Time >= param.startTime);
+            }
+            if (param.endTime != DateTime.MinValue)
+            {
+                bets = bets.Where(b => b.Time <= param.endTime);
+            }
 
-       
+            if (!string.IsNullOrWhiteSpace(param.platform))
+            {
+                bets = bets.Where(b => b.Platform.Contains(param.platform));
+            }
 
+
+            if (bets.Any())
+            {
+                var results = bets.Select(b => new EntityRes.BetDetail
+                {
+                    id = b.Id,
+                    match = b.Match,
+                    time = b.Time,
+                    platform = b.Platform,
+                    isSuccess = (bool)b.IsSuccess
+                }).OrderBy(s => s.time);
+                return Json(new { statusCode = HttpStatusCode.OK, msg = "查询成功", content = Helper.PaginationHelper<EntityRes.BetDetail>.Paging(results, param.pageIndex, param.pageSize) });
+            }
+            else
+            {
+                return Json(new { statusCode = HttpStatusCode.NotFound, msg = "查询为空" });
+            }
+        }
+
+
+
+        /// <summary>
+        /// 添加投注
+        /// </summary>
+        /// <param name="bet"></param>
+        /// <returns></returns>
         [HttpPost]
         public async Task<IHttpActionResult> SaveBet(EntityReq.Bet bet)
         {
             if (ModelState.IsValid)
             {
-       
+                Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
 
-                var attachmentDB = await db.Attachments.FindAsync(bet.Attachment);
-                if (attachmentDB == null)
-                {
-                    return Json(new { code = 20000, status = "fail", msg = "附件不存在" });
-                }
-                DataBase.FT_Bet2 betDB = new DataBase.FT_Bet2
+
+                MiniDB.Bet betDB = new MiniDB.Bet
                 {
                     Id = Guid.NewGuid(),
-                    Match = bet.Match,
-                    Team = bet.Team,
-                    Remarks = bet.Remarks,
-                    Attachment = bet.Attachment,
-                    Time = bet.Time,
-                    Money = bet.Money,
-                    Odds = bet.Odds,
-                    Profit = bet.Profit,
-                    Platform = bet.Platform,
-                    IsSuccess = bet.IsSuccess
+                    Member = userId,
+                    Match = bet.match,
+                    Team = bet.team,
+                    Remarks = bet.remarks,
+                    Time = bet.time,
+                    Money = bet.money,
+                    Odds = bet.odds,
+                    Profit = bet.profit,
+                    Platform = bet.platform,
+                    IsSuccess = bet.isSuccess
                 };
-                //保存按钮 --> 上传附件（状态禁用） --> 保存投注 （修改附件状态为正常）
-                attachmentDB.Status = Models.Config.Status.normal;
                 db.Entry(betDB).State = System.Data.Entity.EntityState.Added;
                 try
                 {
                     await db.SaveChangesAsync();
-                    return Json(new { code = 20000, status = "success", msg = "保存成功" });
+                    return Json(new { statusCode = HttpStatusCode.Created, msg = "保存成功", content = betDB.Id });
                 }
                 catch (Exception ex)
                 {
                     Helper.LogHelper.WriteErrorLog(ex);
-                    return Json(new { status = "fail", msg = "服务器错误" });
+                    return Json(new { statusCode = HttpStatusCode.InternalServerError, msg = "服务器错误" });
                 }
             }
             else
             {
-                return Json(new { code = 20000, status = "fail", msg = "请求参数错误", content = ModelState });
+                return Json(new { statusCode = HttpStatusCode.BadRequest, msg = "请求参数错误", content = ModelState.Values });
             }
         }
 
+        /// <summary>
+        /// 更新投注（修改、删除）
+        /// </summary>
+        /// <param name="bet"></param>
+        /// <returns></returns>
         [HttpPut]
-        public async Task<IHttpActionResult> UpdateBet(ReqFB.Bet bet)
+        public async Task<IHttpActionResult> UpdateBet(EntityReq.BetUpdate bet)
         {
             if (ModelState.IsValid)
             {
-                if (bet.Id == Guid.Empty)
+                if (bet.id == Guid.Empty)
                 {
-                    return Json(new { code = 20000, status = "fail", msg = "请选择投注单" });
+                    return Json(new { statusCode = HttpStatusCode.NotFound, msg = "投注不存在" });
+                }
+                Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
+
+                var betDB = await db.Bet.FindAsync(bet.id);
+                if (betDB == null || betDB.Member != userId)
+                {
+                    return Json(new { statusCode = HttpStatusCode.NotFound, msg = "投注不存在" });
                 }
 
-                var betDB = await db.FT_Bet.FindAsync(bet.Id);
-                if (betDB == null)
-                {
-                    return Json(new { code = 20000, status = "fail", msg = "投注不存在" });
-                }
+                betDB.Profit = bet.profit;
+                betDB.IsSuccess = bet.isSuccess;
 
-
-                if (await db.FT_Match.FindAsync(bet.Match) == null)
-                {
-                    return Json(new { code = 20000, status = "fail", msg = "比赛不存在" });
-                }
-
-                if (await db.FT_Team.FindAsync(bet.Team) == null)
-                {
-                    return Json(new { code = 20000, status = "fail", msg = "球队不存在" });
-                }
-                var attachmentDB = await db.Attachments.FindAsync(bet.Attachment);
-                if (attachmentDB == null)
-                {
-                    return Json(new { code = 20000, status = "fail", msg = "附件不存在" });
-                }
-                betDB.Match = bet.Match;
-                betDB.Team = bet.Team;
-                betDB.Remarks = bet.Remarks;
-                betDB.Time = bet.Time;
-                betDB.Money = bet.Money;
-                betDB.Odds = bet.Odds;
-                betDB.Profit = bet.Profit;
-                betDB.Platform = bet.Platform;
-                betDB.IsSuccess = bet.IsSuccess;
-                if (betDB.Attachment != bet.Attachment)
-                {
-                    var oldAttachment = await db.Attachments.FindAsync(betDB.Attachment);
-                    if (oldAttachment != null)
-                    {
-                        oldAttachment.Status = Models.Config.Status.deleted;
-                    }
-                    betDB.Attachment = bet.Attachment;
-                    attachmentDB.Status = Models.Config.Status.normal;
-                }
                 db.Entry(betDB).State = System.Data.Entity.EntityState.Modified;
                 try
                 {
                     await db.SaveChangesAsync();
-                    return Json(new { code = 20000, status = "success", msg = "保存成功" });
+                    return Json(new { statusCode = HttpStatusCode.OK, msg = "修改成功" });
                 }
                 catch (Exception ex)
                 {
                     Helper.LogHelper.WriteErrorLog(ex);
-                    return Json(new { status = "fail", msg = "服务器错误" });
+                    return Json(new { statusCode = HttpStatusCode.InternalServerError, msg = "服务器错误" });
                 }
             }
             else
             {
-                return Json(new { code = 20000, status = "fail", msg = "请求参数错误", content = ModelState });
+                return Json(new { statusCode = HttpStatusCode.BadRequest, msg = "请求参数错误", content = ModelState.Values });
             }
         }
 
+        /// <summary>
+        /// 获取单个投注
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet]
         public async Task<IHttpActionResult> GetBetDetail(Guid id)
         {
-            var betDB = await db.FT_Bet.FindAsync(id);
-            if (betDB == null)
+            Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
+
+            var betDB = await db.Bet.FindAsync(id);
+            if (betDB == null || betDB.Member != userId)
             {
-                return Json(new { code = 20000, status = "fail", msg = "投注不存在" });
+                return Json(new { statusCode = HttpStatusCode.NotFound, msg = "投注不存在" });
             }
-            var detail = new ResFB.BetDetail
+            var attachmentDB = db.Attachment.FirstOrDefault(a => a.Belong == id && a.Status == Models.Config.Status.normal);
+            var detail = new EntityRes.BetDetail
             {
-                Id = betDB.Id,
-                Match = db.FT_Match.Where(s=>s.Id == betDB.Match).Select(s => new ResFB.Match { 
-                    Id = s.Id,
-                    HomeTeam = s.HomeTeam,
-                    GuestTeam = s.GuestTeam,
-                    HomeScore = s.HomeScore,
-                    GuestScore = s.GuestScore,
-                    Time = s.Time
-                }).FirstOrDefault(),
-                Team = betDB.Team,
-                Time = betDB.Time,
-                Platform = betDB.Platform,
-                IsSuccess = betDB.IsSuccess,
-                Money = betDB.Money,
-                Profit = betDB.Profit,
-                Odds = betDB.Odds,
-                Remarks = betDB.Remarks,
-                Attachment = betDB.Attachment,
-                AttachmentName = betDB.Attachments.FileName
+                id = betDB.Id,
+                match = betDB.Match,
+                team = betDB.Team,
+                time = betDB.Time,
+                platform = betDB.Platform,
+                isSuccess = (bool)betDB.IsSuccess,
+                money = betDB.Money,
+                profit = betDB.Profit,
+                odds = betDB.Odds,
+                remarks = betDB.Remarks,
+                attachment = attachmentDB.Id,
+                attachmentName = attachmentDB == null ? "" : attachmentDB.FileName
             };
-            return Json(new { code = 20000, status = "success", msg = "查询成功", content = detail });
+            return Json(new { statusCode = HttpStatusCode.OK, msg = "查询成功", content = detail });
         }
     }
 }
