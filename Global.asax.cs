@@ -55,7 +55,7 @@ namespace WebApi
     //);              // Add MVC view profiling (you want this)());// 然后在之前的配置后边加上AddEntityFramework()：
     //                //  MiniProfiler;
                     //检查数据库
-            App_Start.CreatDB.Creat();
+            //App_Start.CreatDB.Creat();
 
         }
 

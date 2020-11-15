@@ -17,6 +17,8 @@ namespace MiniDB
             Collection = new HashSet<Collection>();
             Log = new HashSet<Log>();
             Order = new HashSet<Order>();
+            WalletLog = new HashSet<WalletLog>();
+            WalletLog1 = new HashSet<WalletLog>();
         }
 
         public Guid Id { get; set; }
@@ -53,6 +55,8 @@ namespace MiniDB
         [StringLength(100)]
         public string UnionId { get; set; }
 
+        public decimal Balance { get; set; }
+
         [Required]
         [StringLength(100)]
         public string SessionKey { get; set; }
@@ -63,6 +67,7 @@ namespace MiniDB
 
         public bool Expert { get; set; }
 
+        public short Status { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Article> Article { get; set; }
 
@@ -77,5 +82,11 @@ namespace MiniDB
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Order> Order { get; set; }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<WalletLog> WalletLog { get; set; }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<WalletLog> WalletLog1 { get; set; }
     }
 }

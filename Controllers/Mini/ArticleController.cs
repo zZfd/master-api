@@ -11,6 +11,7 @@ using EntityRes = WebApi.Models.Response.Mini;
 
 namespace WebApi.Controllers.Mini
 {
+    [Filter.AuthorityFilter]
     public class ArticleController : ApiController
     {
 
@@ -29,17 +30,9 @@ namespace WebApi.Controllers.Mini
             if (ModelState.IsValid)
             {
                 Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
-                if (userId == Guid.Empty)
-                {
-                    return Json(new { statusCode = HttpStatusCode.Unauthorized, msg = "请先登录" });
-                }
-                var userDb = await DB.Member.FindAsync(userId);
-                if (userDb == null || !userDb.Maker)
-                {
-                    return Json(new { statusCode = HttpStatusCode.Forbidden, msg = "用户不具备权限" });
-                }
 
-                if (!userDb.Expert && article.money > 0)
+                var userDb = await DB.Member.FindAsync(userId);
+                if (!userDb.Maker)
                 {
                     return Json(new { statusCode = HttpStatusCode.Forbidden, msg = "请先成为创作者" });
                 }
@@ -234,6 +227,7 @@ namespace WebApi.Controllers.Mini
                     title = a.Title,
                     author = a.Member.NickName,
                     time = a.Time,
+                    money = a.Money,
                     match = a.Match,
                     isTrue = a.IsTrue,
                     preferenceCount = a.Preference,
@@ -284,6 +278,57 @@ namespace WebApi.Controllers.Mini
                     author = a.Member.NickName,
                     time = a.Time,
                     match = a.Match,
+                    money = a.Money,
+                    isTrue = a.IsTrue,
+                    preferenceCount = a.Preference,
+                    collectionCount = a.Collection,
+                    cover = a.Member.AvatarUrl,
+                }).OrderByDescending(a => a.time);
+                var pagerResult = Helper.PaginationHelper<EntityReq.Article>.Paging(result, query.pageIndex, query.pageSize);
+                return Json(new
+                {
+                    statusCode = HttpStatusCode.OK,
+                    msg = "查询成功",
+                    content = new
+                    {
+                        articles = pagerResult,
+                        total = pagerResult.Total
+                    }
+                });
+            }
+            else
+            {
+                return Json(new { statusCode = HttpStatusCode.NoContent, msg = "查询为空" });
+            }
+        }
+
+        /// <summary>
+        ///  筛选收费文章（id,key,author,pi,ps)
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public IHttpActionResult ListCharge(EntityReq.ArtcileQuery query)
+        {
+            var source = DB.Article.Where(a => a.Status == Models.Config.Status.normal && a.Money != 0);
+
+            if (query.author != Guid.Empty)
+            {
+                source = source.Where(a => a.Author == query.author);
+            }
+            if (!string.IsNullOrWhiteSpace(query.key))
+            {
+                source = source.Where(a => (string.Concat(a.Member.NickName, a.Title, a.Match, a.Recommend, a.Analysis)).Contains(query.key));
+            }
+            if (source.Any())
+            {
+                var result = source.Select(a => new EntityReq.Article
+                {
+                    id = a.Id,
+                    title = a.Title,
+                    author = a.Member.NickName,
+                    time = a.Time,
+                    match = a.Match,
+                    money = a.Money,
                     isTrue = a.IsTrue,
                     preferenceCount = a.Preference,
                     collectionCount = a.Collection,
@@ -323,9 +368,37 @@ namespace WebApi.Controllers.Mini
                 // 收费文章
                 if (article.Money > 0 && DB.Order.FirstOrDefault(o => o.Member == userId && o.Article == id) == null)
                 {
-                    return Json(new { statusCode = HttpStatusCode.NoContent, msg = "查询为空" });
+                    // 没有缴费
+                    return Json(new { statusCode = HttpStatusCode.OK, msg = "查询成功",content = new EntityReq.Article
+                    {
+                        id = article.Id,
+                        title = article.Title,
+                        author = article.Member.NickName,
+                        time = article.Time,
+                        match = article.Match,
+                        money = article.Money,
+                        preferenceCount = article.Preference,
+                        collectionCount = article.Collection,
+                        cover = article.Member.AvatarUrl
+                    }
+                    });
                 }
-                return Json(new { statusCode = HttpStatusCode.OK, msg = "查询成功", content = article });
+                return Json(new { statusCode = HttpStatusCode.OK, msg = "查询成功", content = new EntityReq.Article
+                {
+                    id = article.Id,
+                    title = article.Title,
+                    author = article.Member.NickName,
+                    time = article.Time,
+                    match = article.Match,
+                    money = article.Money,
+                    recommend = article.Recommend,
+                    analysis = article.Analysis,
+                    //attachment = DB.Attachment.FirstOrDefault(a=>a.Belong == article.Id).Id,
+                    preferenceCount = article.Preference,
+                    collectionCount = article.Collection,
+                    cover = article.Member.AvatarUrl
+                }
+                });
 
             }
             else

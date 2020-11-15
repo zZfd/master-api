@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Http;
 using MRequest = WebApi.Models.Request.Mini;
 using MResponse = WebApi.Models.Response.Mini;
@@ -11,9 +12,14 @@ using MResponse = WebApi.Models.Response.Mini;
 
 namespace WebApi.Controllers.Mini
 {
-    public class MinMemberController : ApiController
+    [Filter.AuthorityFilter]
+    public class MemberController : ApiController
     {
         private MiniDB.MiniDB DB = new MiniDB.MiniDB();
+        private const string TOKEN = "ZFDYES";
+
+        private readonly string PaswordSalt = "vdsjlfjasldj";
+
         private readonly string Appid = "wx1148378bc5c4f41d";
         private readonly string Secret = "b0803d1019699d4b5f8f900ca061d83d";
         private readonly string grant_type = "authorization_code";
@@ -26,6 +32,7 @@ namespace WebApi.Controllers.Mini
         /// <param name="code"></param>
         /// <returns></returns>
         [HttpGet]
+        [AllowAnonymous]
         public IHttpActionResult Login(string code)
         {
             if (string.IsNullOrWhiteSpace(code))
@@ -55,12 +62,16 @@ namespace WebApi.Controllers.Mini
                 {
                     return Json(new { statusCode = HttpStatusCode.NoContent, msg = "用户不存在" });
                 }
+                HttpRequest request = HttpContext.Current.Request;
+                string msg = string.Format("请求IP：{0}\n请求代理：{1}\n用户Id：{2}\n",
+          request.UserHostAddress, request.UserAgent, member.Id + "登录成功");
+                Helper.LogHelper.WriteSinInLog(msg);
                 return Json(new
                 {
                     statusCode = HttpStatusCode.OK,
                     content = new
                     {
-                        token = Helper.EncryptionHelper.CreateToken(member.Id, "980323", 9999000),
+                        token = Helper.EncryptionHelper.CreateToken(member.Id, PaswordSalt),
                         uid = member.Id
                     }
                 });
@@ -71,18 +82,16 @@ namespace WebApi.Controllers.Mini
             }
         }
 
+        /// <summary>
+        /// 获取用户信息
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
-        public async Task<IHttpActionResult> GetUserInfo(Guid uid)
+        public async Task<IHttpActionResult> GetUserInfo()
         {
-            if (uid == Guid.Empty)
-            {
-                return Json(new { statusCode = HttpStatusCode.BadRequest, msg = "请求失败" });
-            }
-            var member = await DB.Member.FindAsync(uid);
-            if (member == null)
-            {
-                return Json(new { statusCode = HttpStatusCode.NoContent, msg = "用户不存在" });
-            }
+            Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
+
+            var member = await DB.Member.FindAsync(userId);
             return Json(new
             {
                 statusCode = HttpStatusCode.OK,
@@ -92,7 +101,8 @@ namespace WebApi.Controllers.Mini
                     phone = member.Phone,
                     maker = member.Maker,
                     expert = member.Expert,
-                    avatarUrl = member.AvatarUrl
+                    avatarUrl = member.AvatarUrl,
+                    balance = member.Balance
                 }
             });
         }
@@ -103,6 +113,7 @@ namespace WebApi.Controllers.Mini
         /// <param name="signUp"></param>
         /// <returns></returns>
         [HttpPost]
+        [AllowAnonymous]
         public async Task<IHttpActionResult> SignUp(MRequest.SignUp signUp)
         {
             if (ModelState.IsValid)
@@ -119,7 +130,7 @@ namespace WebApi.Controllers.Mini
                 var wxLoginRes = Helper.JsonHelper.DeserializeJsonToObject<MResponse.WxLogin>(loginResponse);
                 if (wxLoginRes == null)
                 {
-                    return Json(new { statusCode = HttpStatusCode.InternalServerError, msg = "微信登录失败" });
+                    return Json(new { statusCode = HttpStatusCode.InternalServerError, msg = "微信注册失败" });
                 }
 
 
@@ -170,15 +181,13 @@ namespace WebApi.Controllers.Mini
                 }
                 else
                 {
-                    return Json(new { statusCode = HttpStatusCode.InternalServerError, msg = "微信登录失败" });
+                    return Json(new { statusCode = HttpStatusCode.InternalServerError, msg = "微信注册失败" });
                 }
             }
             else
             {
-                return Json(new { statusCode = HttpStatusCode.BadRequest, msg = "请求失败" });
+                return Json(new { statusCode = HttpStatusCode.BadRequest, msg = "请求错误" });
             }
-
-
         }
 
 

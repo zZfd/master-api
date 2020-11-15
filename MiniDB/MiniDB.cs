@@ -19,6 +19,7 @@ namespace MiniDB
         public virtual DbSet<Log> Log { get; set; }
         public virtual DbSet<Member> Member { get; set; }
         public virtual DbSet<Order> Order { get; set; }
+        public virtual DbSet<WalletLog> WalletLog { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
@@ -31,7 +32,7 @@ namespace MiniDB
                 .IsUnicode(false);
 
             modelBuilder.Entity<Article>()
-                .Property(e => e.Recommand)
+                .Property(e => e.Recommend)
                 .IsUnicode(false);
 
             modelBuilder.Entity<Article>()
@@ -50,6 +51,11 @@ namespace MiniDB
                 .HasForeignKey(e => e.Article)
                 .WillCascadeOnDelete(false);
 
+            modelBuilder.Entity<Article>()
+                .HasMany(e => e.WalletLog)
+                .WithOptional(e => e.Article1)
+                .HasForeignKey(e => e.Article);
+
             modelBuilder.Entity<Attachment>()
                 .Property(e => e.FileName)
                 .IsUnicode(false);
@@ -65,16 +71,6 @@ namespace MiniDB
             modelBuilder.Entity<Attachment>()
                 .Property(e => e.FileType)
                 .IsUnicode(false);
-
-            modelBuilder.Entity<Attachment>()
-                .HasMany(e => e.Article)
-                .WithOptional(e => e.Attachment1)
-                .HasForeignKey(e => e.Attachment);
-
-            modelBuilder.Entity<Attachment>()
-                .HasMany(e => e.Bet)
-                .WithOptional(e => e.Attachment1)
-                .HasForeignKey(e => e.Attachment);
 
             modelBuilder.Entity<Bet>()
                 .Property(e => e.Match)
@@ -164,6 +160,21 @@ namespace MiniDB
                 .WithRequired(e => e.Member1)
                 .HasForeignKey(e => e.Member)
                 .WillCascadeOnDelete(false);
+
+            modelBuilder.Entity<Member>()
+                .HasMany(e => e.WalletLog)
+                .WithOptional(e => e.Member1)
+                .HasForeignKey(e => e.Buyer);
+
+            modelBuilder.Entity<Member>()
+                .HasMany(e => e.WalletLog1)
+                .WithRequired(e => e.Member2)
+                .HasForeignKey(e => e.Member)
+                .WillCascadeOnDelete(false);
+
+            modelBuilder.Entity<WalletLog>()
+                .Property(e => e.Remarks)
+                .IsUnicode(false);
         }
     }
 }

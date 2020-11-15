@@ -9,13 +9,6 @@ namespace MiniDB
     [Table("Attachment")]
     public partial class Attachment
     {
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
-        public Attachment()
-        {
-            Article = new HashSet<Article>();
-            Bet = new HashSet<Bet>();
-        }
-
         public Guid Id { get; set; }
 
         [Required]
@@ -43,11 +36,5 @@ namespace MiniDB
         public Guid Belong { get; set; }
 
         public short Status { get; set; }
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<Article> Article { get; set; }
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<Bet> Bet { get; set; }
     }
 }

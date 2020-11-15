@@ -37,10 +37,6 @@ namespace MiniDB
 
         public bool? IsSuccess { get; set; }
 
-        public Guid? Attachment { get; set; }
-
-        public virtual Attachment Attachment1 { get; set; }
-
         public virtual Member Member1 { get; set; }
     }
 }

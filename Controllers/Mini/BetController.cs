@@ -11,7 +11,7 @@ using EntityRes = WebApi.Models.Response.Mini;
 
 namespace WebApi.Controllers.Mini
 {
-    public class MiniBetController : ApiController
+    public class BetController : ApiController
     {
         private readonly MiniDB.MiniDB db = new MiniDB.MiniDB();
         private const string TOKEN = "ZFDYES";

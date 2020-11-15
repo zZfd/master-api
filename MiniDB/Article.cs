@@ -14,6 +14,7 @@ namespace MiniDB
         {
             Collection1 = new HashSet<Collection>();
             Order = new HashSet<Order>();
+            WalletLog = new HashSet<WalletLog>();
         }
 
         public Guid Id { get; set; }
@@ -37,8 +38,6 @@ namespace MiniDB
         [Column(TypeName = "text")]
         public string Analysis { get; set; }
 
-        public Guid? Attachment { get; set; }
-
         public bool? IsTrue { get; set; }
 
         public int Preference { get; set; }
@@ -49,8 +48,6 @@ namespace MiniDB
 
         public short Status { get; set; }
 
-        public virtual Attachment Attachment1 { get; set; }
-
         public virtual Member Member { get; set; }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
@@ -58,5 +55,8 @@ namespace MiniDB
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Order> Order { get; set; }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<WalletLog> WalletLog { get; set; }
     }
 }

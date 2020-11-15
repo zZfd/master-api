@@ -59,6 +59,7 @@
     <Compile Include="MiniDB.cs" />
     <Compile Include="Order.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WalletLog.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

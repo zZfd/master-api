@@ -8,7 +8,7 @@ using System.Web;
 using System.Web.Http;
 
 namespace WebApi.Controllers.Mini { 
-    public class MiniAttachmentController : ApiController
+    public class AttachmentController : ApiController
     {
         private readonly MiniDB.MiniDB db = new MiniDB.MiniDB();
         private const string TOKEN = "ZFDYES";
@@ -36,13 +36,13 @@ namespace WebApi.Controllers.Mini {
                 string belong = HttpContext.Current.Request.Form["Belong"];
                     var fileExtension = Path.GetExtension(files[0].FileName);    //扩展名
 
-                    var attachment = new DataBase.Attachments 
+                    var attachment = new MiniDB.Attachment 
                     { 
                         Id = Guid.NewGuid(),
                         UpTime = now,
                         UpAccount = userId,
                         Belong = Helper.TypeHelper.ToGuid(belong),//保存成功的时候修改
-                        Status = Models.Config.Status.forbidden,
+                        Status = Models.Config.Status.normal,
                         AttachmentType = string.IsNullOrWhiteSpace(attachmentType) ? "-1" : attachmentType,
                         FileType = files[0].ContentType,
                         FileSize = files[0].ContentLength,
@@ -53,7 +53,7 @@ namespace WebApi.Controllers.Mini {
                 try
                 {
                     await db.SaveChangesAsync();
-                    string UploadRoot = ConfigurationManager.AppSettings["FilePath"].ToString();    //根路径
+                    string UploadRoot = ConfigurationManager.AppSettings["MiniFilePath"].ToString();    //根路径
                     var saveFilePath = UploadRoot + "/" + now.ToString("yyyyMMdd") + "/" + userId.ToString("N");
 
                     var fileSize = files[0].ContentLength;

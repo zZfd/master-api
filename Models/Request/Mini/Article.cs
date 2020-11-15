@@ -18,6 +18,7 @@ namespace WebApi.Models.Request.Mini
 
         public DateTime time { get; set; }
 
+
         [Required(ErrorMessage = "请填写标题")]
         [StringLength(50)]
         public string title { get; set; }
@@ -56,8 +57,8 @@ namespace WebApi.Models.Request.Mini
 
         public string cover { get; set; }
         // 审核
-        [Required(ErrorMessage = "请选择状态")]
-        [Range(minimum: Models.Config.Status.deleted, maximum: Models.Config.Status.forbidden)]
+        //[Required(ErrorMessage = "请选择状态")]
+        //[Range(minimum: Models.Config.Status.deleted, maximum: Models.Config.Status.forbidden)]
         public short status { get; set; }
 
     }
