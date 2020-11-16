@@ -11,7 +11,6 @@ namespace WebApi.Models.Request.Mini
     /// </summary>
     public class Order
     {
-        [Required(ErrorMessage = "请填写用户")]
         public Guid member { get; set; }
         [Required(ErrorMessage = "请选择文章")]
         public Guid article { get; set; }

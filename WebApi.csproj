@@ -162,6 +162,7 @@
     <Compile Include="Controllers\Mini\AttachmentController.cs" />
     <Compile Include="Controllers\Mini\MemberController.cs" />
     <Compile Include="Controllers\Mini\OrderController.cs" />
+    <Compile Include="Controllers\Mini\PayController.cs" />
     <Compile Include="Controllers\Mini\WalletController.cs" />
     <Compile Include="Factory\Mini\LogHelper.cs" />
     <Compile Include="Filter\AuthorityFilter.cs" />
@@ -176,11 +177,13 @@
     <Compile Include="Models\Request\Mini\Log.cs" />
     <Compile Include="Models\Request\Mini\Member.cs" />
     <Compile Include="Models\Request\Mini\Order.cs" />
+    <Compile Include="Models\Request\Mini\Pay.cs" />
     <Compile Include="Models\Response\Mini\Article.cs" />
     <Compile Include="Models\Response\Mini\Bet.cs" />
     <Compile Include="Models\Response\Mini\Collection.cs" />
     <Compile Include="Models\Response\Mini\Member.cs" />
     <Compile Include="Models\Response\Mini\Order.cs" />
+    <Compile Include="Models\Response\Mini\Pay.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

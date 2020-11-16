@@ -19,11 +19,11 @@ namespace Helper
         {
             try
             {
-                if (!System.IO.Directory.Exists(ConfigurationManager.AppSettings["LogPath"] + "/ErrorLogs"))
+                if (!System.IO.Directory.Exists(ConfigurationManager.AppSettings["MiniLogPath"] + "/ErrorLogs"))
                 {
                     Directory.CreateDirectory(ConfigurationManager.AppSettings["LogPath"] + "/ErrorLogs");
                 }
-                StreamWriter sw = new StreamWriter(ConfigurationManager.AppSettings["LogPath"] + "/ErrorLogs/" + DateTime.Now.ToString("yyyyMMdd") + "_Error_Log.ini", true);
+                StreamWriter sw = new StreamWriter(ConfigurationManager.AppSettings["MiniLogPath"] + "/ErrorLogs/" + DateTime.Now.ToString("yyyyMMdd") + "_Error_Log.ini", true);
                 sw.WriteLine("================================  " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "  ================================");
                 sw.WriteLine("Exception Message:" + ex.Message);
                 sw.WriteLine("Exception Source:" + ex.Source);

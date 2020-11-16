@@ -82,8 +82,14 @@ PHn9lnocvW/1gUjeYwIDAQAB");
         /// <returns></returns>
         public static string CreateToken(Guid userId, string passwordSalt, int expires = 1958000)
         {
-            string body = RASForToken.Encrypt(userId.ToString("N") +  passwordSalt);
+            string body = RASForToken.Encrypt(userId.ToString("N") + passwordSalt);
             long origin = new DateTime(1970, 1, 1).Ticks;
+
+            // 1 毫秒 = 10^-3 秒，
+            // 1 微秒 = 10 ^ -6 秒，
+            //1 毫微秒 = 10 ^ -9 秒，
+            //100 毫微秒 = 10 ^ -7 秒
+            // Ticks单位是100毫微妙
             //13位时间戳 与js时间戳保持一致，精确到毫秒
             string now = ((DateTime.Now.ToUniversalTime().Ticks - origin) / 10000).ToString();
             string expriesStr = expires.ToString();
@@ -106,7 +112,8 @@ PHn9lnocvW/1gUjeYwIDAQAB");
             {
                 string body = token.Substring(7, token.Length - 20);
                 string decrypted = RASForToken.Decrypt(body);
-                if(decrypted.Substring(0,32).Equals(userId.ToString("N")) && decrypted.Substring(32).Equals(passwordSalt)){
+                if (decrypted.Substring(0, 32).Equals(userId.ToString("N")) && decrypted.Substring(32).Equals(passwordSalt))
+                {
                     //校验token信息是否准确
                     long origin = new DateTime(1970, 1, 1).Ticks;
                     long time = long.Parse(token.Substring(0, 4) + token.Substring(token.Length - 9));
@@ -120,7 +127,7 @@ PHn9lnocvW/1gUjeYwIDAQAB");
                 {
                     return false;
                 }
-                
+
             }
             catch (Exception ex)
             {

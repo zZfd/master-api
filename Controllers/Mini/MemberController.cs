@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -20,9 +21,9 @@ namespace WebApi.Controllers.Mini
 
         private readonly string PaswordSalt = "vdsjlfjasldj";
 
-        private readonly string Appid = "wx1148378bc5c4f41d";
-        private readonly string Secret = "b0803d1019699d4b5f8f900ca061d83d";
-        private readonly string grant_type = "authorization_code";
+        //private readonly string Appid = "wx1148378bc5c4f41d";
+        //private readonly string Secret = "b0803d1019699d4b5f8f900ca061d83d";
+        //private readonly string grant_type = "authorization_code";
 
 
         /// <summary>
@@ -41,8 +42,13 @@ namespace WebApi.Controllers.Mini
             }
             //向微信服务端 使用登录凭证 code 获取 session_key 和 openid   
             // https://api.weixin.qq.com/sns/jscode2session?appid=APPID&secret=SECRET&js_code=JSCODE&grant_type=authorization_code
-
-            string url = "https://api.weixin.qq.com/sns/jscode2session?appid=" + Appid + "&secret=" + Secret + "&js_code=" + code + "&grant_type=" + grant_type;
+            string url = string.Format("{0}?appid={1}&secret={2}&js_code={3}&grant_type={4}",
+                (ConfigurationManager.AppSettings["loginUrl"].ToString(),
+                ConfigurationManager.AppSettings["appid"].ToString(),
+                ConfigurationManager.AppSettings["secret"].ToString(),
+                code,
+                ConfigurationManager.AppSettings["grant_type"].ToString()
+                ));
 
             Helper.MiniLoginHelper miniLoginHelper = new Helper.MiniLoginHelper();
             string loginResponse = miniLoginHelper.GetUrltoHtml(url, "utf-8");//获取微信服务器返回字符串  

@@ -55,6 +55,7 @@
     <Compile Include="RandomHelper.cs" />
     <Compile Include="RSACryptoService.cs" />
     <Compile Include="TypeHelper.cs" />
+    <Compile Include="WxPayHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
