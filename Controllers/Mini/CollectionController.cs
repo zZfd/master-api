@@ -26,10 +26,6 @@ namespace WebApi.Controllers.Mini
         public async Task<IHttpActionResult> Add(Guid articleId)
         {
             Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
-            if (userId == Guid.Empty)
-            {
-                return Json(new { statusCode = HttpStatusCode.Unauthorized, msg = "请先登录" });
-            }
             var article = await DB.Article.FindAsync(articleId);
             if (article == null || article.Status != Models.Config.Status.normal)
             {
@@ -67,10 +63,6 @@ namespace WebApi.Controllers.Mini
         {
 
             Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
-            if (userId == Guid.Empty)
-            {
-                return Json(new { statusCode = HttpStatusCode.Unauthorized, msg = "请先登录" });
-            }
 
             var collectionDb = await DB.Collection.FindAsync(collectionId);
             if (collectionDb != null && collectionDb.Status == Models.Config.Status.normal && collectionDb.Member == userId)
@@ -84,7 +76,7 @@ namespace WebApi.Controllers.Mini
             try
             {
                 await DB.SaveChangesAsync();
-                return Json(new { statusCode = HttpStatusCode.Created, msg = "取消收藏", content = collectionDb.Id }); // 回传id
+                return Json(new { statusCode = HttpStatusCode.OK, msg = "取消收藏", content = collectionDb.Id }); // 回传id
             }
             catch
             {

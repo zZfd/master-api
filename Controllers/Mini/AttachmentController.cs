@@ -67,7 +67,7 @@ namespace WebApi.Controllers.Mini {
                     //saveFilePath 为文件的物理路径 --- /根路径/时间/上传人ID/附件Id.扩展名
                     files[0].SaveAs(saveFilePath + "/" + attachment.Id + fileExtension);
 
-                    return Json(new { code = 20000, status = "success", msg = "上传成功!", content = attachment.Id });
+                    return Json(new { statusCode = HttpStatusCode.OK, msg = "上传成功!", content = attachment.Id });
                 }
                 catch(Exception ex)
                 {

@@ -47,7 +47,7 @@ namespace WebApi.Controllers.Mini
                     Money = article.money,
                     Analysis = article.analysis,
                     Time = DateTime.Now,
-                    Status = Models.Config.Status.forbidden // 文章发布后需要审核
+                    Status = Models.Config.Status.normal // 文章发布后需要审核
                 };
                 var logDb = new MiniDB.Log
                 {
@@ -153,16 +153,13 @@ namespace WebApi.Controllers.Mini
             if (ModelState.IsValid)
             {
                 Guid userId = Helper.EncryptionHelper.GetUserId(HttpContext.Current.Request.Headers[TOKEN]);
-                if (userId == Guid.Empty)
-                {
-                    return Json(new { statusCode = HttpStatusCode.Unauthorized, msg = "请先登录" });
-                }
+
                 var userDb = await DB.Member.FindAsync(userId);
                 // 权限下一个版本再做全
-                if (userDb == null || !userDb.Phone.Equals("13776050390"))
-                {
-                    return Json(new { statusCode = HttpStatusCode.Forbidden, msg = "用户不具备权限" });
-                }
+                //if (userDb == null || !userDb.Phone.Equals("13776050390"))
+                //{
+                //    return Json(new { statusCode = HttpStatusCode.Forbidden, msg = "用户不具备权限" });
+                //}
 
                 var articleDb = await DB.Article.FindAsync(article.id);
                 if (articleDb == null || articleDb.Status != Models.Config.Status.normal)
